@@ -67,6 +67,15 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Follow-ups', href: '/crm/follow-ups', permission: 'follow_up.view' },
     ],
   },
+  {
+    label: 'Finance',
+    items: [
+      { label: 'Reports', href: '/finance/reports', permission: 'finance.view_reports' },
+      { label: 'Income', href: '/finance/incomes', permission: 'income.view' },
+      { label: 'Expenses', href: '/finance/expenses', permission: 'expense.view' },
+      { label: 'Invoices', href: '/finance/invoices', permission: 'invoice.view' },
+    ],
+  },
 ];
 
 export function visibleNavSections(user: AuthUser | null): NavSection[] {
