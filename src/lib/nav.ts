@@ -50,6 +50,14 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Employee documents', href: '/hr/employee-documents', permission: 'employee_document.view' },
     ],
   },
+  {
+    label: 'Operations',
+    items: [
+      { label: 'Overview', href: '/operations/overview', permission: 'operations.view_dashboard' },
+      { label: 'Projects', href: '/operations/projects', permission: 'project.view' },
+      { label: 'Tasks', href: '/operations/tasks', permission: 'task.view' },
+    ],
+  },
 ];
 
 export function visibleNavSections(user: AuthUser | null): NavSection[] {
