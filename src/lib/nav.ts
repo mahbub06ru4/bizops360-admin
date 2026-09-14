@@ -58,6 +58,15 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Tasks', href: '/operations/tasks', permission: 'task.view' },
     ],
   },
+  {
+    label: 'CRM',
+    items: [
+      { label: 'Reports', href: '/crm/reports', permission: 'crm.view_dashboard' },
+      { label: 'Leads', href: '/crm/leads', permission: 'lead.view' },
+      { label: 'Customers', href: '/crm/customers', permission: 'customer.view' },
+      { label: 'Follow-ups', href: '/crm/follow-ups', permission: 'follow_up.view' },
+    ],
+  },
 ];
 
 export function visibleNavSections(user: AuthUser | null): NavSection[] {
