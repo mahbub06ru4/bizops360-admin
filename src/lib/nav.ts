@@ -37,6 +37,19 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Roles', href: '/organization/roles', permission: 'role.view' },
     ],
   },
+  {
+    label: 'HR',
+    items: [
+      { label: 'Holidays', href: '/hr/holidays', permission: 'holiday.view' },
+      { label: 'Leave types', href: '/hr/leave-types', permission: 'leave_type.view' },
+      { label: 'Leave requests', href: '/hr/leave-requests', permission: 'leave.view' },
+      { label: 'Leave balances', href: '/hr/leave-balances', permission: 'leave.view' },
+      { label: 'Attendance', href: '/hr/attendance', permission: 'attendance.view' },
+      { label: 'Attendance settings', href: '/hr/attendance-settings', permission: 'attendance.manage_settings' },
+      { label: 'Office location', href: '/hr/office-location', permission: 'attendance.manage' },
+      { label: 'Employee documents', href: '/hr/employee-documents', permission: 'employee_document.view' },
+    ],
+  },
 ];
 
 export function visibleNavSections(user: AuthUser | null): NavSection[] {

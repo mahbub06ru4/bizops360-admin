@@ -19,14 +19,15 @@ interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
  */
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
   const { token, body, noStore = true, headers, ...rest } = options;
+  const isFormData = body instanceof FormData;
 
   const response = await fetch(`${env.apiBaseUrl}/api/v1${path}`, {
     ...rest,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
     cache: noStore ? 'no-store' : rest.cache,
     headers: {
       Accept: 'application/json',
-      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...(body !== undefined && !isFormData ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
