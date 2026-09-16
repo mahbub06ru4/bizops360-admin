@@ -37,6 +37,8 @@ export interface NavSection {
   label: string;
   icon: NavIconName;
   items: NavItem[];
+  /** Gate the whole section on `user.tenant.industry` matching this value. */
+  industry?: string;
 }
 
 /**
@@ -116,21 +118,41 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Invoices', href: '/finance/invoices', icon: 'FileText', permission: 'invoice.view' },
     ],
   },
+  {
+    label: 'Reports',
+    icon: 'FileBarChart2',
+    items: [
+      { label: 'All reports', href: '/reports', icon: 'FileBarChart2' },
+      { label: 'Employee directory', href: '/reports/employees', icon: 'Users', permission: 'employee.view' },
+      { label: 'Attendance log', href: '/reports/attendance', icon: 'CalendarClock', permission: 'attendance.view' },
+      { label: 'Leave requests', href: '/reports/leave-requests', icon: 'ClipboardList', permission: 'leave.view' },
+      { label: 'Leave balances', href: '/reports/leave-balances', icon: 'FileBarChart2', permission: 'leave.view' },
+      { label: 'Projects', href: '/reports/projects', icon: 'ClipboardList', permission: 'project.view' },
+      { label: 'Task list', href: '/reports/tasks', icon: 'FileText', permission: 'task.view' },
+      { label: 'Sales pipeline', href: '/reports/leads', icon: 'Handshake', permission: 'lead.view' },
+      { label: 'Customer list', href: '/reports/customers', icon: 'Contact', permission: 'customer.view' },
+      { label: 'Invoices', href: '/reports/invoices', icon: 'FileText', permission: 'invoice.view' },
+      { label: 'Expense report', href: '/reports/expenses', icon: 'Receipt', permission: 'expense.view' },
+      { label: 'Income report', href: '/reports/income', icon: 'Banknote', permission: 'income.view' },
+    ],
+  },
 ];
 
 export function visibleNavSections(user: AuthUser | null): NavSection[] {
-  return NAV_SECTIONS.map((section) => ({
-    ...section,
-    items: section.items.filter((item) => {
-      if (item.platformOnly) {
-        return user?.is_platform_admin ?? false;
-      }
+  return NAV_SECTIONS.filter((section) => !section.industry || user?.tenant?.industry === section.industry)
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        if (item.platformOnly) {
+          return user?.is_platform_admin ?? false;
+        }
 
-      if (item.permission) {
-        return hasPermission(user, item.permission);
-      }
+        if (item.permission) {
+          return hasPermission(user, item.permission);
+        }
 
-      return true;
-    }),
-  })).filter((section) => section.items.length > 0);
+        return true;
+      }),
+    }))
+    .filter((section) => section.items.length > 0);
 }
