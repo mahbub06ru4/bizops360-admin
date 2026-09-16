@@ -41,51 +41,48 @@ const ICONS: Record<NavIconName, LucideIcon> = {
   Wallet,
 };
 
-const STORAGE_KEY = 'bizops360:collapsed-nav-sections';
+const STORAGE_KEY = 'bizops360:expanded-nav-section';
 
 export function SidebarNav({ sections, onNavigate }: { sections: NavSection[]; onNavigate?: () => void }) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const activeSectionLabel = sections.find((section) => section.items.some((item) => item.href === pathname))?.label;
+  // Accordion: one section open at a time, like a real admin panel — expanding
+  // one collapses the rest instead of letting the list grow without bound.
+  // Defaults to whichever section contains the current route.
+  const [expanded, setExpanded] = useState<string | null>(activeSectionLabel ?? sections[0]?.label ?? null);
 
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored) {
+      if (stored !== null) {
         // One-shot hydration from localStorage on mount — SSR has no access
         // to it, so this can't be a lazy useState initializer instead.
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setCollapsed(new Set(JSON.parse(stored) as string[]));
+        setExpanded(stored === '' ? null : stored);
       }
     } catch {
-      // Ignore unavailable/blocked storage — sections just stay expanded.
+      // Ignore unavailable/blocked storage — the route-derived default stands.
     }
+    // Only ever runs once, to hydrate from a prior session — not on every
+    // pathname change, which would fight the user's own expand/collapse.
   }, []);
 
   function toggle(label: string) {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
+    const next = expanded === label ? null : label;
+    setExpanded(next);
 
-      if (next.has(label)) {
-        next.delete(label);
-      } else {
-        next.add(label);
-      }
-
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(next)));
-      } catch {
-        // Best-effort persistence only.
-      }
-
-      return next;
-    });
+    try {
+      window.localStorage.setItem(STORAGE_KEY, next ?? '');
+    } catch {
+      // Best-effort persistence only.
+    }
   }
 
   return (
     <nav className="flex flex-col gap-1">
       {sections.map((section) => {
         const SectionIcon = ICONS[section.icon];
-        const isCollapsed = collapsed.has(section.label);
+        const isCollapsed = expanded !== section.label;
         const hasActiveItem = section.items.some((item) => item.href === pathname);
 
         return (
