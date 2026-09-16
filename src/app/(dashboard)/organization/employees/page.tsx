@@ -3,8 +3,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { EmployeeDialog } from '@/components/organization/employee-dialog';
 import { PageHeader } from '@/components/organization/page-header';
 import { TerminateEmployeeButton } from '@/components/organization/terminate-employee-button';
+import { PaginationControls } from '@/components/shared/pagination-controls';
+import { SearchBox } from '@/components/shared/search-box';
 import { apiFetch } from '@/lib/api/client';
 import { getToken } from '@/lib/auth/session';
+import { listAll } from '@/lib/organization/actions';
 import type { Paginated } from '@/lib/api/types';
 import type { Branch, Department, Designation, Employee } from '@/lib/organization/types';
 
@@ -15,22 +18,37 @@ const STATUS_VARIANT: Record<Employee['employment_status'], 'default' | 'seconda
   terminated: 'destructive',
 };
 
-export default async function EmployeesPage() {
+export default async function EmployeesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; per_page?: string; q?: string }>;
+}) {
+  const { page, per_page: perPage, q } = await searchParams;
   const token = await getToken();
-  const [{ data: employees }, { data: branches }, { data: departments }, { data: designations }] = await Promise.all([
-    apiFetch<Paginated<Employee>>('/employees?per_page=100', { token }),
-    apiFetch<Paginated<Branch>>('/branches?per_page=100', { token }),
-    apiFetch<Paginated<Department>>('/departments?per_page=100', { token }),
-    apiFetch<Paginated<Designation>>('/designations?per_page=100', { token }),
+
+  const query = new URLSearchParams();
+  if (page) query.set('page', page);
+  if (q) query.set('q', q);
+  query.set('per_page', perPage ?? '15');
+
+  const [{ data: employees, meta }, branches, departments, designations] = await Promise.all([
+    apiFetch<Paginated<Employee>>(`/employees?${query.toString()}`, { token }),
+    listAll<Branch>('/branches', token ?? ''),
+    listAll<Department>('/departments', token ?? ''),
+    listAll<Designation>('/designations', token ?? ''),
   ]);
 
   return (
     <div>
       <PageHeader
         title="Employees"
-        description={`${employees.length} on record.`}
+        description={`${meta.total} on record.`}
         action={<EmployeeDialog branches={branches} departments={departments} designations={designations} />}
       />
+
+      <div className="mb-4">
+        <SearchBox basePath="/organization/employees" placeholder="Search by name, code, or email…" />
+      </div>
 
       <Table>
         <TableHeader>
@@ -63,12 +81,14 @@ export default async function EmployeesPage() {
           {employees.length === 0 && (
             <TableRow>
               <TableCell colSpan={5} className="text-center text-muted-foreground">
-                No employees yet.
+                {q ? `No employees match "${q}".` : 'No employees yet.'}
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+
+      <PaginationControls meta={meta} basePath="/organization/employees" searchParams={{ per_page: perPage, q }} />
     </div>
   );
 }
