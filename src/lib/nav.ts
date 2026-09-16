@@ -1,9 +1,32 @@
 import type { AuthUser } from '@/lib/api/types';
 import { hasPermission } from '@/lib/auth/session';
 
+/**
+ * Names of the lucide-react icons used in the nav — kept as string keys
+ * (resolved to components in the client-side SidebarNav) rather than
+ * component references, since NAV_SECTIONS is read by a Server Component and
+ * React component values can't cross that boundary as plain prop data.
+ */
+export type NavIconName =
+  | 'Banknote'
+  | 'Building2'
+  | 'CalendarClock'
+  | 'ClipboardList'
+  | 'Contact'
+  | 'FileBarChart2'
+  | 'FileText'
+  | 'Handshake'
+  | 'LayoutDashboard'
+  | 'MapPin'
+  | 'Receipt'
+  | 'ShieldCheck'
+  | 'Users'
+  | 'Wallet';
+
 export interface NavItem {
   label: string;
   href: string;
+  icon?: NavIconName;
   /** Gate on a specific permission (checked against `user.permissions`). */
   permission?: string;
   /** Gate on `user.is_platform_admin` instead of a tenant permission. */
@@ -12,6 +35,7 @@ export interface NavItem {
 
 export interface NavSection {
   label: string;
+  icon: NavIconName;
   items: NavItem[];
 }
 
@@ -23,57 +47,73 @@ export interface NavSection {
 export const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Overview',
-    items: [{ label: 'Dashboard', href: '/' }],
+    icon: 'LayoutDashboard',
+    items: [{ label: 'Dashboard', href: '/', icon: 'LayoutDashboard' }],
   },
   {
     label: 'Organization',
+    icon: 'Building2',
     items: [
-      { label: 'Branches', href: '/organization/branches', permission: 'branch.view' },
-      { label: 'Departments', href: '/organization/departments', permission: 'department.view' },
-      { label: 'Designations', href: '/organization/designations', permission: 'designation.view' },
-      { label: 'Employees', href: '/organization/employees', permission: 'employee.view' },
-      { label: 'Teams', href: '/organization/teams', permission: 'team.view' },
-      { label: 'Users', href: '/organization/users', permission: 'user.view' },
-      { label: 'Roles', href: '/organization/roles', permission: 'role.view' },
+      { label: 'Branches', href: '/organization/branches', icon: 'MapPin', permission: 'branch.view' },
+      { label: 'Departments', href: '/organization/departments', icon: 'Building2', permission: 'department.view' },
+      { label: 'Designations', href: '/organization/designations', icon: 'ClipboardList', permission: 'designation.view' },
+      { label: 'Employees', href: '/organization/employees', icon: 'Users', permission: 'employee.view' },
+      { label: 'Teams', href: '/organization/teams', icon: 'Contact', permission: 'team.view' },
+      { label: 'Users', href: '/organization/users', icon: 'ShieldCheck', permission: 'user.view' },
+      { label: 'Roles', href: '/organization/roles', icon: 'ShieldCheck', permission: 'role.view' },
     ],
   },
   {
     label: 'HR',
+    icon: 'Users',
     items: [
-      { label: 'Holidays', href: '/hr/holidays', permission: 'holiday.view' },
-      { label: 'Leave types', href: '/hr/leave-types', permission: 'leave_type.view' },
-      { label: 'Leave requests', href: '/hr/leave-requests', permission: 'leave.view' },
-      { label: 'Leave balances', href: '/hr/leave-balances', permission: 'leave.view' },
-      { label: 'Attendance', href: '/hr/attendance', permission: 'attendance.view' },
-      { label: 'Attendance settings', href: '/hr/attendance-settings', permission: 'attendance.manage_settings' },
-      { label: 'Office location', href: '/hr/office-location', permission: 'attendance.manage' },
-      { label: 'Employee documents', href: '/hr/employee-documents', permission: 'employee_document.view' },
+      { label: 'Holidays', href: '/hr/holidays', icon: 'CalendarClock', permission: 'holiday.view' },
+      { label: 'Leave types', href: '/hr/leave-types', icon: 'FileText', permission: 'leave_type.view' },
+      { label: 'Leave requests', href: '/hr/leave-requests', icon: 'ClipboardList', permission: 'leave.view' },
+      { label: 'Leave balances', href: '/hr/leave-balances', icon: 'FileBarChart2', permission: 'leave.view' },
+      { label: 'Attendance', href: '/hr/attendance', icon: 'CalendarClock', permission: 'attendance.view' },
+      {
+        label: 'Attendance settings',
+        href: '/hr/attendance-settings',
+        icon: 'ShieldCheck',
+        permission: 'attendance.manage_settings',
+      },
+      { label: 'Office location', href: '/hr/office-location', icon: 'MapPin', permission: 'attendance.manage' },
+      {
+        label: 'Employee documents',
+        href: '/hr/employee-documents',
+        icon: 'FileText',
+        permission: 'employee_document.view',
+      },
     ],
   },
   {
     label: 'Operations',
+    icon: 'ClipboardList',
     items: [
-      { label: 'Overview', href: '/operations/overview', permission: 'operations.view_dashboard' },
-      { label: 'Projects', href: '/operations/projects', permission: 'project.view' },
-      { label: 'Tasks', href: '/operations/tasks', permission: 'task.view' },
+      { label: 'Overview', href: '/operations/overview', icon: 'FileBarChart2', permission: 'operations.view_dashboard' },
+      { label: 'Projects', href: '/operations/projects', icon: 'ClipboardList', permission: 'project.view' },
+      { label: 'Tasks', href: '/operations/tasks', icon: 'FileText', permission: 'task.view' },
     ],
   },
   {
     label: 'CRM',
+    icon: 'Handshake',
     items: [
-      { label: 'Reports', href: '/crm/reports', permission: 'crm.view_dashboard' },
-      { label: 'Leads', href: '/crm/leads', permission: 'lead.view' },
-      { label: 'Customers', href: '/crm/customers', permission: 'customer.view' },
-      { label: 'Follow-ups', href: '/crm/follow-ups', permission: 'follow_up.view' },
+      { label: 'Reports', href: '/crm/reports', icon: 'FileBarChart2', permission: 'crm.view_dashboard' },
+      { label: 'Leads', href: '/crm/leads', icon: 'Handshake', permission: 'lead.view' },
+      { label: 'Customers', href: '/crm/customers', icon: 'Contact', permission: 'customer.view' },
+      { label: 'Follow-ups', href: '/crm/follow-ups', icon: 'CalendarClock', permission: 'follow_up.view' },
     ],
   },
   {
     label: 'Finance',
+    icon: 'Wallet',
     items: [
-      { label: 'Reports', href: '/finance/reports', permission: 'finance.view_reports' },
-      { label: 'Income', href: '/finance/incomes', permission: 'income.view' },
-      { label: 'Expenses', href: '/finance/expenses', permission: 'expense.view' },
-      { label: 'Invoices', href: '/finance/invoices', permission: 'invoice.view' },
+      { label: 'Reports', href: '/finance/reports', icon: 'FileBarChart2', permission: 'finance.view_reports' },
+      { label: 'Income', href: '/finance/incomes', icon: 'Banknote', permission: 'income.view' },
+      { label: 'Expenses', href: '/finance/expenses', icon: 'Receipt', permission: 'expense.view' },
+      { label: 'Invoices', href: '/finance/invoices', icon: 'FileText', permission: 'invoice.view' },
     ],
   },
 ];

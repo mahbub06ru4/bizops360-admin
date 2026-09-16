@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu } from 'lucide-react';
+import { Building2, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { SidebarNav } from './sidebar-nav';
@@ -17,9 +17,14 @@ export function MobileNav({ sections }: { sections: NavSection[] }) {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-4">
+      <SheetContent side="left" className="w-64 border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
         <SheetHeader className="px-0">
-          <SheetTitle>BizOps 360</SheetTitle>
+          <SheetTitle className="flex items-center gap-2.5 text-sidebar-foreground">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sidebar-primary">
+              <Building2 className="h-4 w-4 text-sidebar-primary-foreground" />
+            </div>
+            BizOps 360
+          </SheetTitle>
         </SheetHeader>
         <div className="mt-4">
           <SidebarNav sections={sections} onNavigate={() => setOpen(false)} />
