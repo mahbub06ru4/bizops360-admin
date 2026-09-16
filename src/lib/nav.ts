@@ -56,31 +56,18 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Organization',
     icon: 'Building2',
     items: [
-      { label: 'Branches', href: '/organization/branches', icon: 'MapPin', permission: 'branch.view' },
-      { label: 'Departments', href: '/organization/departments', icon: 'Building2', permission: 'department.view' },
-      { label: 'Designations', href: '/organization/designations', icon: 'ClipboardList', permission: 'designation.view' },
       { label: 'Employees', href: '/organization/employees', icon: 'Users', permission: 'employee.view' },
       { label: 'Teams', href: '/organization/teams', icon: 'Contact', permission: 'team.view' },
       { label: 'Users', href: '/organization/users', icon: 'ShieldCheck', permission: 'user.view' },
-      { label: 'Roles', href: '/organization/roles', icon: 'ShieldCheck', permission: 'role.view' },
     ],
   },
   {
     label: 'HR',
     icon: 'Users',
     items: [
-      { label: 'Holidays', href: '/hr/holidays', icon: 'CalendarClock', permission: 'holiday.view' },
-      { label: 'Leave types', href: '/hr/leave-types', icon: 'FileText', permission: 'leave_type.view' },
       { label: 'Leave requests', href: '/hr/leave-requests', icon: 'ClipboardList', permission: 'leave.view' },
       { label: 'Leave balances', href: '/hr/leave-balances', icon: 'FileBarChart2', permission: 'leave.view' },
       { label: 'Attendance', href: '/hr/attendance', icon: 'CalendarClock', permission: 'attendance.view' },
-      {
-        label: 'Attendance settings',
-        href: '/hr/attendance-settings',
-        icon: 'ShieldCheck',
-        permission: 'attendance.manage_settings',
-      },
-      { label: 'Office location', href: '/hr/office-location', icon: 'MapPin', permission: 'attendance.manage' },
       {
         label: 'Employee documents',
         href: '/hr/employee-documents',
@@ -94,7 +81,6 @@ export const NAV_SECTIONS: NavSection[] = [
     icon: 'ClipboardList',
     items: [
       { label: 'Overview', href: '/operations/overview', icon: 'FileBarChart2', permission: 'operations.view_dashboard' },
-      { label: 'Projects', href: '/operations/projects', icon: 'ClipboardList', permission: 'project.view' },
       { label: 'Tasks', href: '/operations/tasks', icon: 'FileText', permission: 'task.view' },
     ],
   },
@@ -113,7 +99,6 @@ export const NAV_SECTIONS: NavSection[] = [
     icon: 'Wallet',
     items: [
       { label: 'Reports', href: '/finance/reports', icon: 'FileBarChart2', permission: 'finance.view_reports' },
-      { label: 'Income', href: '/finance/incomes', icon: 'Banknote', permission: 'income.view' },
       { label: 'Expenses', href: '/finance/expenses', icon: 'Receipt', permission: 'expense.view' },
       { label: 'Invoices', href: '/finance/invoices', icon: 'FileText', permission: 'invoice.view' },
     ],
