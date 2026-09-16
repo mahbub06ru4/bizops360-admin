@@ -16,6 +16,7 @@ export type NavIconName =
   | 'FileBarChart2'
   | 'FileText'
   | 'Handshake'
+  | 'Home'
   | 'LayoutDashboard'
   | 'MapPin'
   | 'Receipt'
@@ -135,6 +136,12 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Expense report', href: '/reports/expenses', icon: 'Receipt', permission: 'expense.view' },
       { label: 'Income report', href: '/reports/income', icon: 'Banknote', permission: 'income.view' },
     ],
+  },
+  {
+    label: 'Real Estate',
+    icon: 'Home',
+    industry: 'real_estate',
+    items: [{ label: 'Projects', href: '/real-estate/projects', icon: 'Building2', permission: 'real_estate_project.view' }],
   },
 ];
 
