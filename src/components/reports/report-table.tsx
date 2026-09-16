@@ -7,6 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { exportReportToExcel, exportReportToPdf, type ReportColumn, type ReportRow } from '@/lib/reports/export';
 
+const PAGE_SIZE = 15;
+
 export function ReportTable({
   title,
   filename,
@@ -19,6 +21,12 @@ export function ReportTable({
   rows: ReportRow[];
 }) {
   const [exporting, setExporting] = useState<'pdf' | 'excel' | null>(null);
+  const [page, setPage] = useState(1);
+
+  const lastPage = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, lastPage);
+  const from = (currentPage - 1) * PAGE_SIZE;
+  const visibleRows = rows.slice(from, from + PAGE_SIZE);
 
   return (
     <div>
@@ -73,8 +81,8 @@ export function ReportTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((row, index) => (
-            <TableRow key={index}>
+          {visibleRows.map((row, index) => (
+            <TableRow key={from + index}>
               {columns.map((column) => (
                 <TableCell key={column.key}>{row[column.key] ?? '—'}</TableCell>
               ))}
@@ -89,6 +97,25 @@ export function ReportTable({
           )}
         </TableBody>
       </Table>
+
+      {lastPage > 1 && (
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {from + 1}–{Math.min(from + PAGE_SIZE, rows.length)} of {rows.length}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
+              Previous
+            </Button>
+            <span className="flex items-center px-2 text-sm text-muted-foreground">
+              Page {currentPage} of {lastPage}
+            </span>
+            <Button variant="outline" size="sm" disabled={currentPage >= lastPage} onClick={() => setPage(currentPage + 1)}>
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

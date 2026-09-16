@@ -1,13 +1,15 @@
 import { Building2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { getDynamicNavSectionsSafe } from '@/lib/admin-schema/fetch';
 import { visibleNavSections } from '@/lib/nav';
 import type { AuthUser } from '@/lib/api/types';
 import { MobileNav } from './mobile-nav';
 import { SidebarNav } from './sidebar-nav';
 import { UserMenu } from './user-menu';
 
-export function AppShell({ user, children }: { user: AuthUser; children: React.ReactNode }) {
-  const sections = visibleNavSections(user);
+export async function AppShell({ user, children }: { user: AuthUser; children: React.ReactNode }) {
+  const dynamicSections = await getDynamicNavSectionsSafe(user);
+  const sections = [...visibleNavSections(user), ...dynamicSections];
 
   return (
     <div className="flex min-h-screen">
