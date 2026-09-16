@@ -5,10 +5,32 @@ import { PipelineBarChart, type PipelineBar } from '@/components/dashboard/pipel
 import { StatusDonutChart, type DonutSlice } from '@/components/dashboard/status-donut-chart';
 import { apiFetch } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/errors';
+import { getAdminSchema } from '@/lib/admin-schema/fetch';
 import { getSession, getToken, hasPermission } from '@/lib/auth/session';
 import type { CrmOverview } from '@/lib/crm/types';
 import type { OperationsOverview } from '@/lib/operations/types';
 import type { MonthlyFinanceReport } from '@/lib/finance/types';
+
+/**
+ * The permission gating each chart lives in the backend schema
+ * (`dashboards`), same source of truth as the nav links to these same
+ * pages — so a permission rename on the backend doesn't silently break
+ * chart visibility here without a frontend change too. Falls back to the
+ * permission string itself if the schema is unreachable.
+ */
+async function dashboardPermission(key: string, fallback: string): Promise<string> {
+  try {
+    const schema = await getAdminSchema();
+
+    return schema.dashboards.find((dashboard) => dashboard.key === key)?.permission ?? fallback;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return fallback;
+    }
+
+    throw error;
+  }
+}
 
 function titleCase(value: string): string {
   return value
@@ -33,9 +55,15 @@ export default async function DashboardPage() {
   const [user, token] = await Promise.all([getSession(), getToken()]);
   const firstName = user?.name.split(' ')[0] ?? '';
 
-  const canViewFinance = hasPermission(user, 'finance.view_reports');
-  const canViewOperations = hasPermission(user, 'operations.view_dashboard');
-  const canViewCrm = hasPermission(user, 'crm.view_dashboard');
+  const [financePermission, operationsPermission, crmPermission] = await Promise.all([
+    dashboardPermission('finance_reports', 'finance.view_reports'),
+    dashboardPermission('operations_overview', 'operations.view_dashboard'),
+    dashboardPermission('crm_reports', 'crm.view_dashboard'),
+  ]);
+
+  const canViewFinance = hasPermission(user, financePermission);
+  const canViewOperations = hasPermission(user, operationsPermission);
+  const canViewCrm = hasPermission(user, crmPermission);
 
   const [monthly, operations, crm] = await Promise.all([
     canViewFinance

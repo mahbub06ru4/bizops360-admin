@@ -126,6 +126,16 @@ export function DynamicFormDialog({
               );
             }
 
+            if (field.type === 'file') {
+              return (
+                <div key={field.key} className="flex flex-col gap-2">
+                  <Label htmlFor={field.key}>{field.label}</Label>
+                  <Input id={field.key} name={field.key} type="file" required={field.required} />
+                  {fieldError && <p className="text-sm text-destructive">{fieldError}</p>}
+                </div>
+              );
+            }
+
             const defaultValue = record ? getPath(record, field.key) : undefined;
 
             return (
@@ -148,9 +158,11 @@ export function DynamicFormDialog({
                         ? 'number'
                         : field.type === 'date'
                           ? 'date'
-                          : field.type === 'password'
-                            ? 'password'
-                            : 'text'
+                          : field.type === 'time'
+                            ? 'time'
+                            : field.type === 'password'
+                              ? 'password'
+                              : 'text'
                     }
                     defaultValue={field.type === 'password' ? '' : defaultValue ? String(defaultValue) : ''}
                     required={field.required}

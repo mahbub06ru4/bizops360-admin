@@ -56,6 +56,11 @@ function buildPayload(fields: FieldSchema[], formData: FormData): Record<string,
   return payload;
 }
 
+/** A 'file' field means the request must stay multipart, not become JSON. */
+function buildBody(fields: FieldSchema[], formData: FormData): Record<string, unknown> | FormData {
+  return fields.some((field) => field.type === 'file') ? formData : buildPayload(fields, formData);
+}
+
 export async function createResourceRecord(
   endpoint: string,
   fields: FieldSchema[],
@@ -65,7 +70,7 @@ export async function createResourceRecord(
 ): Promise<ActionState> {
   try {
     const token = await requireToken();
-    await apiFetch(endpoint, { method: 'POST', token, body: buildPayload(fields, formData) });
+    await apiFetch(endpoint, { method: 'POST', token, body: buildBody(fields, formData) });
     revalidatePath(listPath);
 
     return ok;
@@ -84,7 +89,26 @@ export async function updateResourceRecord(
 ): Promise<ActionState> {
   try {
     const token = await requireToken();
-    await apiFetch(`${endpoint}/${id}`, { method: 'PUT', token, body: buildPayload(fields, formData) });
+    await apiFetch(`${endpoint}/${id}`, { method: 'PUT', token, body: buildBody(fields, formData) });
+    revalidatePath(listPath);
+
+    return ok;
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+/** For `mode: 'singleton'` resources: PUT to the bare endpoint, no id. */
+export async function updateSingletonRecord(
+  endpoint: string,
+  fields: FieldSchema[],
+  listPath: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const token = await requireToken();
+    await apiFetch(endpoint, { method: 'PUT', token, body: buildBody(fields, formData) });
     revalidatePath(listPath);
 
     return ok;

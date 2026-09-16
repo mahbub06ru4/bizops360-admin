@@ -7,7 +7,9 @@ import { getSession, hasPermission } from '@/lib/auth/session';
 
 export default async function ReportsHubPage() {
   const [user, schema] = await Promise.all([getSession(), getAdminSchema()]);
-  const visible = schema.resources.filter((resource) => hasPermission(user, resource.permissions.view));
+  const visible = schema.resources.filter(
+    (resource) => resource.mode !== 'singleton' && hasPermission(user, resource.permissions.view),
+  );
 
   return (
     <div>

@@ -33,14 +33,38 @@ export default async function DynamicReportPage({ params }: { params: Promise<{ 
     );
   }
 
-  const { data } = await apiFetch<Paginated<Record<string, unknown>>>(`${resource.endpoint}?per_page=100`, { token });
+  if (resource.mode === 'singleton') {
+    return (
+      <div>
+        <PageHeader title={resource.pluralLabel} />
+        <p className="text-sm text-muted-foreground">
+          This is a single tenant-wide record, not a list — see it under{' '}
+          <a href={`/admin/${resource.key}`} className="underline">
+            {resource.label}
+          </a>
+          {' '}instead.
+        </p>
+      </div>
+    );
+  }
+
+  const path = resource.paginated === false ? resource.endpoint : `${resource.endpoint}?per_page=100`;
+  const { data } = await apiFetch<Paginated<Record<string, unknown>>>(path, { token });
 
   const rows: ReportRow[] = data.map((row) =>
     Object.fromEntries(
       resource.columns.map((column) => {
         const value = getPath(row, column.key);
 
-        return [column.key, typeof value === 'boolean' ? (value ? 'Yes' : 'No') : (value as string | number | null)];
+        if (typeof value === 'boolean') {
+          return [column.key, value ? 'Yes' : 'No'];
+        }
+
+        if (Array.isArray(value)) {
+          return [column.key, value.join(', ')];
+        }
+
+        return [column.key, value as string | number | null];
       }),
     ),
   );

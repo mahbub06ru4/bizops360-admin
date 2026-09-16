@@ -53,20 +53,32 @@ export async function getDynamicNavSectionsSafe(user: AuthUser | null): Promise<
         // points at the generic, backend-schema-driven screens instead.
         label: `${module.label} (Dynamic)`,
         icon: module.icon as NavIconName,
-        items: module.resources
-          .map((key) => schema.resources.find((resource) => resource.key === key))
-          .filter((resource): resource is ResourceSchema => resource !== undefined)
-          .filter((resource) => hasPermission(user, resource.permissions.view))
-          .map((resource) => ({
-            label: resource.pluralLabel,
-            href: `/admin/${resource.key}`,
-          })),
+        items: [
+          ...module.resources
+            .map((key) => schema.resources.find((resource) => resource.key === key))
+            .filter((resource): resource is ResourceSchema => resource !== undefined)
+            .filter((resource) => hasPermission(user, resource.permissions.view))
+            .map((resource) => ({
+              label: resource.pluralLabel,
+              href: `/admin/${resource.key}`,
+            })),
+          // Bespoke analytics pages the schema can't render generically —
+          // still worth surfacing here so this section is a complete map
+          // of the module, not just its CRUD resources.
+          ...schema.dashboards
+            .filter((dashboard) => dashboard.module === module.key)
+            .filter((dashboard) => hasPermission(user, dashboard.permission))
+            .map((dashboard) => ({ label: dashboard.label, href: dashboard.href })),
+        ],
       }))
       .filter((section) => section.items.length > 0);
 
-    // One consolidated Reports section, every resource the schema knows
-    // about — this replaces the old hand-written list of 11 report pages.
-    const visibleResources = schema.resources.filter((resource) => hasPermission(user, resource.permissions.view));
+    // One consolidated Reports section, every list resource the schema
+    // knows about — this replaces the old hand-written list of 11 report
+    // pages. Singletons (one record, no list) aren't reportable.
+    const visibleResources = schema.resources.filter(
+      (resource) => resource.mode !== 'singleton' && hasPermission(user, resource.permissions.view),
+    );
     const reportsSection: NavSection[] =
       visibleResources.length > 0
         ? [

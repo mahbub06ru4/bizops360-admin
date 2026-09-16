@@ -1,4 +1,14 @@
-export type FieldType = 'string' | 'text' | 'number' | 'boolean' | 'date' | 'select' | 'relation' | 'password';
+export type FieldType =
+  | 'string'
+  | 'text'
+  | 'number'
+  | 'boolean'
+  | 'date'
+  | 'time'
+  | 'select'
+  | 'relation'
+  | 'password'
+  | 'file';
 
 export interface FieldOption {
   value: string;
@@ -44,6 +54,14 @@ export interface ResourceSchema {
   columns: ColumnSchema[];
   fields: FieldSchema[];
   searchable?: boolean;
+  /** 'singleton' (default 'list'): one GET/PUT record, no id, no list. */
+  mode?: 'list' | 'singleton';
+  /**
+   * Whether the index endpoint returns Laravel's paginate() envelope
+   * (default true). false means a plain `{ data: T[] }` array with no
+   * `meta` — the frontend must not expect pagination for it.
+   */
+  paginated?: boolean;
 }
 
 export interface ModuleSchema {
@@ -53,9 +71,19 @@ export interface ModuleSchema {
   resources: string[];
 }
 
+/** A bespoke analytics page the schema can't render generically — just a permission-gated link. */
+export interface DashboardLink {
+  key: string;
+  label: string;
+  href: string;
+  module: string;
+  permission: string;
+}
+
 export interface AdminSchema {
   modules: ModuleSchema[];
   resources: ResourceSchema[];
+  dashboards: DashboardLink[];
 }
 
 /** Reads a possibly-nested value ("department.name") out of a record. */

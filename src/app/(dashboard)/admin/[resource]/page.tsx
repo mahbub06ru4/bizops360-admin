@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PageHeader } from '@/components/organization/page-header';
 import { DynamicDeleteButton } from '@/components/dynamic/dynamic-delete-button';
 import { DynamicFormDialog } from '@/components/dynamic/dynamic-form-dialog';
+import { DynamicSingletonForm } from '@/components/dynamic/dynamic-singleton-form';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { SearchBox } from '@/components/shared/search-box';
 import { apiFetch } from '@/lib/api/client';
@@ -16,11 +17,23 @@ function formatCell(value: unknown): string {
     return '—';
   }
 
+  if (Array.isArray(value)) {
+    return value.length > 0 ? value.join(', ') : '—';
+  }
+
   if (typeof value === 'boolean') {
     return value ? 'Yes' : 'No';
   }
 
   return String(value);
+}
+
+function rowKey(row: Record<string, unknown>, labelField: string): string {
+  if (row.id !== undefined && row.id !== null) {
+    return String(row.id);
+  }
+
+  return String(row[labelField] ?? JSON.stringify(row));
 }
 
 export default async function DynamicResourcePage({
@@ -52,18 +65,100 @@ export default async function DynamicResourcePage({
   const canCreate = resource.permissions.create !== null && hasPermission(user, resource.permissions.create);
   const canUpdate = resource.permissions.update !== null && hasPermission(user, resource.permissions.update);
   const canDelete = resource.permissions.delete !== null && hasPermission(user, resource.permissions.delete);
+  const listPath = `/admin/${resource.key}`;
+
+  if (resource.mode === 'singleton') {
+    const { data: record } = await apiFetch<{ data: Record<string, unknown> }>(resource.endpoint, { token });
+
+    return (
+      <div>
+        <PageHeader title={resource.label} description="Screen generated from the backend schema." />
+        {canUpdate ? (
+          <DynamicSingletonForm resource={resource} record={record} />
+        ) : (
+          <div className="rounded-xl border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+            {resource.fields.map((field) => (
+              <p key={field.key}>
+                {field.label}: {formatCell(getPath(record, field.key))}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const relationOptions = await listRelationOptionsFor(resource, schema, token);
+
+  if (resource.paginated === false) {
+    const { data: rows } = await apiFetch<{ data: Record<string, unknown>[] }>(resource.endpoint, { token });
+
+    return (
+      <div>
+        <PageHeader
+          title={resource.pluralLabel}
+          description={`${rows.length} on record. Screen generated from the backend schema.`}
+          action={
+            canCreate ? (
+              <DynamicFormDialog resource={resource} relationOptions={relationOptions} listPath={listPath} />
+            ) : undefined
+          }
+        />
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {resource.columns.map((column) => (
+                <TableHead key={column.key}>{column.label}</TableHead>
+              ))}
+              {(canUpdate || canDelete) && <TableHead className="w-24 text-right">Actions</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={rowKey(row, resource.labelField)}>
+                {resource.columns.map((column) => (
+                  <TableCell key={column.key}>{formatCell(getPath(row, column.key))}</TableCell>
+                ))}
+                {(canUpdate || canDelete) && (
+                  <TableCell className="flex justify-end gap-1">
+                    {canUpdate && (
+                      <DynamicFormDialog resource={resource} record={row} relationOptions={relationOptions} listPath={listPath} />
+                    )}
+                    {canDelete && row.id !== undefined && (
+                      <DynamicDeleteButton
+                        endpoint={resource.endpoint}
+                        id={Number(row.id)}
+                        label={String(getPath(row, resource.labelField) ?? '')}
+                        listPath={listPath}
+                      />
+                    )}
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+            {rows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={resource.columns.length + 1} className="text-center text-muted-foreground">
+                  No {resource.pluralLabel.toLowerCase()} yet.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
 
   const query = new URLSearchParams();
   if (page) query.set('page', page);
   if (q) query.set('q', q);
   query.set('per_page', perPage ?? '15');
 
-  const [{ data: rows, meta }, relationOptions] = await Promise.all([
-    apiFetch<Paginated<Record<string, unknown>>>(`${resource.endpoint}?${query.toString()}`, { token }),
-    listRelationOptionsFor(resource, schema, token),
-  ]);
-
-  const listPath = `/admin/${resource.key}`;
+  const { data: rows, meta } = await apiFetch<Paginated<Record<string, unknown>>>(
+    `${resource.endpoint}?${query.toString()}`,
+    { token },
+  );
 
   return (
     <div>
@@ -94,7 +189,7 @@ export default async function DynamicResourcePage({
         </TableHeader>
         <TableBody>
           {rows.map((row) => (
-            <TableRow key={String(row.id)}>
+            <TableRow key={rowKey(row, resource.labelField)}>
               {resource.columns.map((column) => (
                 <TableCell key={column.key}>{formatCell(getPath(row, column.key))}</TableCell>
               ))}
