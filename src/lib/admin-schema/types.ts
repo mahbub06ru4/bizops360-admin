@@ -1,4 +1,4 @@
-export type FieldType = 'string' | 'text' | 'number' | 'boolean' | 'date' | 'select' | 'relation';
+export type FieldType = 'string' | 'text' | 'number' | 'boolean' | 'date' | 'select' | 'relation' | 'password';
 
 export interface FieldOption {
   value: string;
@@ -12,6 +12,8 @@ export interface FieldSchema {
   required?: boolean;
   options?: FieldOption[];
   relation?: { resource: string };
+  /** Hidden on the edit form — e.g. a password only ever set on create. */
+  onlyOnCreate?: boolean;
 }
 
 export interface ColumnSchema {
@@ -19,11 +21,17 @@ export interface ColumnSchema {
   label: string;
 }
 
+/**
+ * `create`/`update`/`delete` are null when no matching backend route
+ * exists for that action (e.g. a resource that's list+create only) — the
+ * frontend hides the action entirely rather than gating it on a permission
+ * that could never be satisfied.
+ */
 export interface ResourcePermissions {
   view: string;
-  create: string;
-  update: string;
-  delete: string;
+  create: string | null;
+  update: string | null;
+  delete: string | null;
 }
 
 export interface ResourceSchema {

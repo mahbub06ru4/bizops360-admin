@@ -49,9 +49,9 @@ export default async function DynamicResourcePage({
     );
   }
 
-  const canCreate = hasPermission(user, resource.permissions.create);
-  const canUpdate = hasPermission(user, resource.permissions.update);
-  const canDelete = hasPermission(user, resource.permissions.delete);
+  const canCreate = resource.permissions.create !== null && hasPermission(user, resource.permissions.create);
+  const canUpdate = resource.permissions.update !== null && hasPermission(user, resource.permissions.update);
+  const canDelete = resource.permissions.delete !== null && hasPermission(user, resource.permissions.delete);
 
   const query = new URLSearchParams();
   if (page) query.set('page', page);

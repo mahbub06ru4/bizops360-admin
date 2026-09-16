@@ -46,7 +46,7 @@ export async function getDynamicNavSectionsSafe(user: AuthUser | null): Promise<
   try {
     const schema = await getAdminSchema();
 
-    return schema.modules
+    const managementSections = schema.modules
       .map((module) => ({
         // Suffixed so it never collides (as a React list key or visually)
         // with the hand-written section of the same name — this nav entry
@@ -63,6 +63,28 @@ export async function getDynamicNavSectionsSafe(user: AuthUser | null): Promise<
           })),
       }))
       .filter((section) => section.items.length > 0);
+
+    // One consolidated Reports section, every resource the schema knows
+    // about — this replaces the old hand-written list of 11 report pages.
+    const visibleResources = schema.resources.filter((resource) => hasPermission(user, resource.permissions.view));
+    const reportsSection: NavSection[] =
+      visibleResources.length > 0
+        ? [
+            {
+              label: 'Reports',
+              icon: 'FileBarChart2',
+              items: [
+                { label: 'All reports', href: '/reports' },
+                ...visibleResources.map((resource) => ({
+                  label: resource.pluralLabel,
+                  href: `/reports/${resource.key}`,
+                })),
+              ],
+            },
+          ]
+        : [];
+
+    return [...managementSections, ...reportsSection];
   } catch (error) {
     if (error instanceof ApiError) {
       return [];

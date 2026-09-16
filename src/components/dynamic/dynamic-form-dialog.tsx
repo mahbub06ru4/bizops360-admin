@@ -73,7 +73,9 @@ export function DynamicFormDialog({
           </DialogTitle>
         </DialogHeader>
         <form action={formAction} className="flex flex-col gap-4">
-          {resource.fields.map((field) => {
+          {resource.fields
+            .filter((field) => !(field.onlyOnCreate && record))
+            .map((field) => {
             const fieldError = state.fieldErrors?.[field.key]?.[0];
 
             if (field.type === 'boolean') {
@@ -141,9 +143,18 @@ export function DynamicFormDialog({
                   <Input
                     id={field.key}
                     name={field.key}
-                    type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
-                    defaultValue={defaultValue ? String(defaultValue) : ''}
+                    type={
+                      field.type === 'number'
+                        ? 'number'
+                        : field.type === 'date'
+                          ? 'date'
+                          : field.type === 'password'
+                            ? 'password'
+                            : 'text'
+                    }
+                    defaultValue={field.type === 'password' ? '' : defaultValue ? String(defaultValue) : ''}
                     required={field.required}
+                    autoComplete={field.type === 'password' ? 'new-password' : undefined}
                   />
                 )}
                 {fieldError && <p className="text-sm text-destructive">{fieldError}</p>}
