@@ -116,8 +116,13 @@ export async function listRelationOptionsFor(
   schema: AdminSchema,
   token: string | null,
 ): Promise<Record<string, { id: number; label: string }[]>> {
+  const actionFields = (resource.actions ?? []).flatMap((action) => action.fields);
   const relationResourceKeys = Array.from(
-    new Set(resource.fields.filter((field) => field.type === 'relation' && field.relation).map((field) => field.relation!.resource)),
+    new Set(
+      [...resource.fields, ...actionFields]
+        .filter((field) => (field.type === 'relation' || field.type === 'relation-multi') && field.relation)
+        .map((field) => field.relation!.resource),
+    ),
   );
 
   const entries = await Promise.all(

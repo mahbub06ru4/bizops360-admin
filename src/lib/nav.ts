@@ -53,28 +53,9 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [{ label: 'Dashboard', href: '/', icon: 'LayoutDashboard' }],
   },
   {
-    label: 'Organization',
-    icon: 'Building2',
-    items: [
-      { label: 'Employees', href: '/organization/employees', icon: 'Users', permission: 'employee.view' },
-      { label: 'Teams', href: '/organization/teams', icon: 'Contact', permission: 'team.view' },
-      { label: 'Users', href: '/organization/users', icon: 'ShieldCheck', permission: 'user.view' },
-    ],
-  },
-  {
     label: 'HR',
     icon: 'Users',
-    items: [
-      { label: 'Leave requests', href: '/hr/leave-requests', icon: 'ClipboardList', permission: 'leave.view' },
-      { label: 'Leave balances', href: '/hr/leave-balances', icon: 'FileBarChart2', permission: 'leave.view' },
-      { label: 'Attendance', href: '/hr/attendance', icon: 'CalendarClock', permission: 'attendance.view' },
-      {
-        label: 'Employee documents',
-        href: '/hr/employee-documents',
-        icon: 'FileText',
-        permission: 'employee_document.view',
-      },
-    ],
+    items: [{ label: 'Leave balances', href: '/hr/leave-balances', icon: 'FileBarChart2', permission: 'leave.view' }],
   },
   {
     label: 'Operations',
@@ -91,7 +72,6 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Reports', href: '/crm/reports', icon: 'FileBarChart2', permission: 'crm.view_dashboard' },
       { label: 'Leads', href: '/crm/leads', icon: 'Handshake', permission: 'lead.view' },
       { label: 'Customers', href: '/crm/customers', icon: 'Contact', permission: 'customer.view' },
-      { label: 'Follow-ups', href: '/crm/follow-ups', icon: 'CalendarClock', permission: 'follow_up.view' },
     ],
   },
   {
@@ -99,7 +79,6 @@ export const NAV_SECTIONS: NavSection[] = [
     icon: 'Wallet',
     items: [
       { label: 'Reports', href: '/finance/reports', icon: 'FileBarChart2', permission: 'finance.view_reports' },
-      { label: 'Expenses', href: '/finance/expenses', icon: 'Receipt', permission: 'expense.view' },
       { label: 'Invoices', href: '/finance/invoices', icon: 'FileText', permission: 'invoice.view' },
     ],
   },

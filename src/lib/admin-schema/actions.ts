@@ -48,6 +48,12 @@ function buildPayload(fields: FieldSchema[], formData: FormData): Record<string,
       case 'relation':
         payload[field.key] = raw ? Number(raw) : null;
         break;
+      case 'relation-multi':
+        payload[field.key] = formData.getAll(field.key).map((value) => Number(value));
+        break;
+      case 'multiselect':
+        payload[field.key] = formData.getAll(field.key).map((value) => String(value));
+        break;
       default:
         payload[field.key] = raw && String(raw).length > 0 ? String(raw) : field.required ? '' : null;
     }
@@ -126,5 +132,44 @@ export async function deleteResourceRecord(endpoint: string, id: number, listPat
     return ok;
   } catch (error) {
     return fail(error);
+  }
+}
+
+/** Runs a schema-declared row action (approve, convert, terminate, ...). */
+export async function invokeResourceAction(
+  method: 'POST' | 'PUT' | 'DELETE',
+  endpointTemplate: string,
+  id: number | null,
+  fields: FieldSchema[],
+  listPath: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const token = await requireToken();
+    const endpoint = id === null ? endpointTemplate : endpointTemplate.replace('{id}', String(id));
+    const body = fields.length > 0 ? buildPayload(fields, formData) : undefined;
+    await apiFetch(endpoint, { method, token, body });
+    revalidatePath(listPath);
+
+    return ok;
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+/** Fetches a single record fresh — used by actions with `fetchDetail` to prefill fields the list row doesn't carry. */
+export async function fetchResourceDetail(endpoint: string, id: number): Promise<Record<string, unknown> | null> {
+  try {
+    const token = await requireToken();
+    const { data } = await apiFetch<{ data: Record<string, unknown> }>(`${endpoint}/${id}`, { token });
+
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return null;
+    }
+
+    throw error;
   }
 }

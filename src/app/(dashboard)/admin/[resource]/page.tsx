@@ -1,20 +1,26 @@
 import { notFound } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PageHeader } from '@/components/organization/page-header';
+import { DynamicActionButton } from '@/components/dynamic/dynamic-action-button';
 import { DynamicDeleteButton } from '@/components/dynamic/dynamic-delete-button';
 import { DynamicFormDialog } from '@/components/dynamic/dynamic-form-dialog';
 import { DynamicSingletonForm } from '@/components/dynamic/dynamic-singleton-form';
+import { DynamicSummaryCards } from '@/components/dynamic/dynamic-summary-cards';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { SearchBox } from '@/components/shared/search-box';
 import { apiFetch } from '@/lib/api/client';
 import { getAdminSchema, listRelationOptionsFor } from '@/lib/admin-schema/fetch';
-import { getPath } from '@/lib/admin-schema/types';
+import { getPath, type ActionSchema } from '@/lib/admin-schema/types';
 import { getSession, getToken, hasPermission } from '@/lib/auth/session';
-import type { Paginated } from '@/lib/api/types';
+import type { AuthUser, Paginated } from '@/lib/api/types';
 
-function formatCell(value: unknown): string {
+function formatCell(value: unknown, column?: { link?: boolean }): string {
   if (value === null || value === undefined || value === '') {
     return '—';
+  }
+
+  if (column?.link) {
+    return 'Download';
   }
 
   if (Array.isArray(value)) {
@@ -26,6 +32,10 @@ function formatCell(value: unknown): string {
   }
 
   return String(value);
+}
+
+function visibleActions(actions: ActionSchema[] | undefined, user: AuthUser | null): ActionSchema[] {
+  return (actions ?? []).filter((action) => action.permission === null || hasPermission(user, action.permission));
 }
 
 function rowKey(row: Record<string, unknown>, labelField: string): string {
@@ -65,6 +75,7 @@ export default async function DynamicResourcePage({
   const canCreate = resource.permissions.create !== null && hasPermission(user, resource.permissions.create);
   const canUpdate = resource.permissions.update !== null && hasPermission(user, resource.permissions.update);
   const canDelete = resource.permissions.delete !== null && hasPermission(user, resource.permissions.delete);
+  const rowActions = visibleActions(resource.actions, user);
   const listPath = `/admin/${resource.key}`;
 
   if (resource.mode === 'singleton') {
@@ -105,23 +116,47 @@ export default async function DynamicResourcePage({
           }
         />
 
+        {resource.summaryEndpoint && <DynamicSummaryCards endpoint={resource.summaryEndpoint} token={token} />}
+
         <Table>
           <TableHeader>
             <TableRow>
               {resource.columns.map((column) => (
                 <TableHead key={column.key}>{column.label}</TableHead>
               ))}
-              {(canUpdate || canDelete) && <TableHead className="w-24 text-right">Actions</TableHead>}
+              {(canUpdate || canDelete || rowActions.length > 0) && <TableHead className="text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
               <TableRow key={rowKey(row, resource.labelField)}>
-                {resource.columns.map((column) => (
-                  <TableCell key={column.key}>{formatCell(getPath(row, column.key))}</TableCell>
-                ))}
-                {(canUpdate || canDelete) && (
-                  <TableCell className="flex justify-end gap-1">
+                {resource.columns.map((column) => {
+                  const value = getPath(row, column.key);
+
+                  return (
+                    <TableCell key={column.key}>
+                      {column.link && typeof value === 'string' && value ? (
+                        <a href={value} className="text-primary underline">
+                          Download
+                        </a>
+                      ) : (
+                        formatCell(value, column)
+                      )}
+                    </TableCell>
+                  );
+                })}
+                {(canUpdate || canDelete || rowActions.length > 0) && (
+                  <TableCell className="flex flex-wrap justify-end gap-1">
+                    {rowActions.map((action) => (
+                      <DynamicActionButton
+                        key={action.key}
+                        action={action}
+                        resourceEndpoint={resource.endpoint}
+                        row={row}
+                        relationOptions={relationOptions}
+                        listPath={listPath}
+                      />
+                    ))}
                     {canUpdate && (
                       <DynamicFormDialog resource={resource} record={row} relationOptions={relationOptions} listPath={listPath} />
                     )}
@@ -178,23 +213,47 @@ export default async function DynamicResourcePage({
         </div>
       )}
 
+      {resource.summaryEndpoint && <DynamicSummaryCards endpoint={resource.summaryEndpoint} token={token} />}
+
       <Table>
         <TableHeader>
           <TableRow>
             {resource.columns.map((column) => (
               <TableHead key={column.key}>{column.label}</TableHead>
             ))}
-            {(canUpdate || canDelete) && <TableHead className="w-24 text-right">Actions</TableHead>}
+            {(canUpdate || canDelete || rowActions.length > 0) && <TableHead className="text-right">Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((row) => (
             <TableRow key={rowKey(row, resource.labelField)}>
-              {resource.columns.map((column) => (
-                <TableCell key={column.key}>{formatCell(getPath(row, column.key))}</TableCell>
-              ))}
-              {(canUpdate || canDelete) && (
-                <TableCell className="flex justify-end gap-1">
+              {resource.columns.map((column) => {
+                const value = getPath(row, column.key);
+
+                return (
+                  <TableCell key={column.key}>
+                    {column.link && typeof value === 'string' && value ? (
+                      <a href={value} className="text-primary underline">
+                        Download
+                      </a>
+                    ) : (
+                      formatCell(value, column)
+                    )}
+                  </TableCell>
+                );
+              })}
+              {(canUpdate || canDelete || rowActions.length > 0) && (
+                <TableCell className="flex flex-wrap justify-end gap-1">
+                  {rowActions.map((action) => (
+                    <DynamicActionButton
+                      key={action.key}
+                      action={action}
+                      resourceEndpoint={resource.endpoint}
+                      row={row}
+                      relationOptions={relationOptions}
+                      listPath={listPath}
+                    />
+                  ))}
                   {canUpdate && (
                     <DynamicFormDialog resource={resource} record={row} relationOptions={relationOptions} listPath={listPath} />
                   )}

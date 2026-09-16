@@ -6,7 +6,9 @@ export type FieldType =
   | 'date'
   | 'time'
   | 'select'
+  | 'multiselect'
   | 'relation'
+  | 'relation-multi'
   | 'password'
   | 'file';
 
@@ -24,11 +26,39 @@ export interface FieldSchema {
   relation?: { resource: string };
   /** Hidden on the edit form — e.g. a password only ever set on create. */
   onlyOnCreate?: boolean;
+  /**
+   * Dot-path evaluated against the row (or, when the owning action sets
+   * `fetchDetail`, a freshly-fetched record) whose value seeds this field's
+   * default when an action dialog opens.
+   */
+  prefillFrom?: string;
 }
 
 export interface ColumnSchema {
   key: string;
   label: string;
+  /** Render the cell value as a clickable/downloadable link instead of plain text. */
+  link?: boolean;
+}
+
+/**
+ * A named, row-level operation beyond plain create/update/delete —
+ * approve/reject, convert, terminate, and the like. No `fields` means the
+ * button submits immediately (after `confirm`, if set); otherwise it opens a
+ * small dialog built from `fields`.
+ */
+export interface ActionSchema {
+  key: string;
+  label: string;
+  method: 'POST' | 'PUT' | 'DELETE';
+  /** May contain a `{id}` placeholder, replaced with the row's id. */
+  endpoint: string;
+  permission: string | null;
+  confirm?: string;
+  style?: 'default' | 'destructive' | 'secondary';
+  fields: FieldSchema[];
+  /** GET the record fresh before opening the dialog, for `prefillFrom` data the list row doesn't carry. */
+  fetchDetail?: boolean;
 }
 
 /**
@@ -62,6 +92,10 @@ export interface ResourceSchema {
    * `meta` — the frontend must not expect pagination for it.
    */
   paginated?: boolean;
+  /** Row-level operations beyond create/update/delete (approve, convert, ...). */
+  actions?: ActionSchema[];
+  /** Fetched and rendered as a row of stat cards above the table — read-only aggregate data no generic form/table captures. */
+  summaryEndpoint?: string;
 }
 
 export interface ModuleSchema {
