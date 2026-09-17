@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { RelationCombobox } from '@/components/dynamic/relation-combobox';
 import { createResourceRecord, updateResourceRecord, type ActionState } from '@/lib/admin-schema/actions';
-import { getPath, type ResourceSchema } from '@/lib/admin-schema/types';
+import { getPath, type RelationOption, type ResourceSchema } from '@/lib/admin-schema/types';
 
 const initial: ActionState = { error: null };
 const NONE = '__none__';
@@ -23,7 +24,7 @@ export function DynamicFormDialog({
 }: {
   resource: ResourceSchema;
   record?: Record<string, unknown>;
-  relationOptions: Record<string, { id: number; label: string }[]>;
+  relationOptions: Record<string, RelationOption[]>;
   listPath: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -91,14 +92,28 @@ export function DynamicFormDialog({
               );
             }
 
-            if (field.type === 'select' || field.type === 'relation') {
-              const options =
-                field.type === 'relation' && field.relation
-                  ? (relationOptions[field.relation.resource] ?? []).map((option) => ({
-                      value: String(option.id),
-                      label: option.label,
-                    }))
-                  : (field.options ?? []);
+            if (field.type === 'relation') {
+              const options = field.relation ? (relationOptions[field.relation.resource] ?? []) : [];
+              const value = pickerValues[field.key] ?? NONE;
+
+              return (
+                <div key={field.key} className="flex flex-col gap-2">
+                  <Label>{field.label}</Label>
+                  <input type="hidden" name={field.key} value={value === NONE ? '' : value} />
+                  <RelationCombobox
+                    options={options}
+                    value={value === NONE ? '' : value}
+                    onChange={(next) => setPickerValues((prev) => ({ ...prev, [field.key]: next || NONE }))}
+                    placeholder={`Choose ${field.label.toLowerCase()}`}
+                    clearable={!field.required}
+                  />
+                  {fieldError && <p className="text-sm text-destructive">{fieldError}</p>}
+                </div>
+              );
+            }
+
+            if (field.type === 'select') {
+              const options = field.options ?? [];
               const value = pickerValues[field.key] ?? NONE;
 
               return (

@@ -130,7 +130,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       <div className="mt-6">
-        <Link href="/crm/leads" className="text-sm text-muted-foreground hover:underline">
+        <Link href="/admin/leads" className="text-sm text-muted-foreground hover:underline">
           ← Back to leads
         </Link>
       </div>

@@ -113,7 +113,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="mt-6">
-        <Link href="/finance/invoices" className="text-sm text-muted-foreground hover:underline">
+        <Link href="/admin/invoices" className="text-sm text-muted-foreground hover:underline">
           ← Back to invoices
         </Link>
       </div>

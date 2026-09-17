@@ -46,41 +46,19 @@ export interface NavSection {
  * "adapt, never fork" principle the Flutter app follows. Each module
  * phase appends its own section here rather than branching the layout.
  */
+/**
+ * Every module-specific screen is now either schema-driven (rendered under
+ * `/admin/[resource]`, linked from the "(Dynamic)" nav sections built in
+ * `admin-schema/fetch.ts`) or one of the bespoke dashboards in the backend
+ * schema's `dashboards` array (also linked from the "(Dynamic)" sections,
+ * via `schema.dashboards`) — so only the plain Overview/Dashboard link is
+ * hand-written here.
+ */
 export const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Overview',
     icon: 'LayoutDashboard',
     items: [{ label: 'Dashboard', href: '/', icon: 'LayoutDashboard' }],
-  },
-  {
-    label: 'HR',
-    icon: 'Users',
-    items: [{ label: 'Leave balances', href: '/hr/leave-balances', icon: 'FileBarChart2', permission: 'leave.view' }],
-  },
-  {
-    label: 'Operations',
-    icon: 'ClipboardList',
-    items: [
-      { label: 'Overview', href: '/operations/overview', icon: 'FileBarChart2', permission: 'operations.view_dashboard' },
-      { label: 'Tasks', href: '/operations/tasks', icon: 'FileText', permission: 'task.view' },
-    ],
-  },
-  {
-    label: 'CRM',
-    icon: 'Handshake',
-    items: [
-      { label: 'Reports', href: '/crm/reports', icon: 'FileBarChart2', permission: 'crm.view_dashboard' },
-      { label: 'Leads', href: '/crm/leads', icon: 'Handshake', permission: 'lead.view' },
-      { label: 'Customers', href: '/crm/customers', icon: 'Contact', permission: 'customer.view' },
-    ],
-  },
-  {
-    label: 'Finance',
-    icon: 'Wallet',
-    items: [
-      { label: 'Reports', href: '/finance/reports', icon: 'FileBarChart2', permission: 'finance.view_reports' },
-      { label: 'Invoices', href: '/finance/invoices', icon: 'FileText', permission: 'invoice.view' },
-    ],
   },
 ];
 

@@ -17,6 +17,13 @@ export interface FieldOption {
   label: string;
 }
 
+/** One choice for a 'relation'/'relation-multi' dropdown — `search` folds in identifying columns (phone, staff code, email, ...) beyond the display label. */
+export interface RelationOption {
+  id: number;
+  label: string;
+  search: string;
+}
+
 export interface FieldSchema {
   key: string;
   label: string;
@@ -59,6 +66,8 @@ export interface ActionSchema {
   fields: FieldSchema[];
   /** GET the record fresh before opening the dialog, for `prefillFrom` data the list row doesn't carry. */
   fetchDetail?: boolean;
+  /** 'row' (default): one button per row. 'resource': a single button near "New X", not tied to any row (a keyless upsert like LeaveBalance's). */
+  scope?: 'row' | 'resource';
 }
 
 /**
@@ -96,6 +105,8 @@ export interface ResourceSchema {
   actions?: ActionSchema[];
   /** Fetched and rendered as a row of stat cards above the table — read-only aggregate data no generic form/table captures. */
   summaryEndpoint?: string;
+  /** May contain `{id}`. When set, the label cell links here instead of showing plain text — for a resource whose detail view is still a hand-built page. */
+  detailPath?: string;
 }
 
 export interface ModuleSchema {

@@ -111,7 +111,7 @@ export async function createTask(_prev: ActionState, formData: FormData): Promis
   try {
     const token = await requireToken();
     await apiFetch<{ data: Task }>('/tasks', { method: 'POST', token, body: taskPayload(formData) });
-    revalidatePath('/operations/tasks');
+    revalidatePath('/admin/tasks');
 
     return ok;
   } catch (error) {
@@ -123,7 +123,7 @@ export async function updateTask(id: number, _prev: ActionState, formData: FormD
   try {
     const token = await requireToken();
     await apiFetch<{ data: Task }>(`/tasks/${id}`, { method: 'PUT', token, body: taskPayload(formData) });
-    revalidatePath('/operations/tasks');
+    revalidatePath('/admin/tasks');
     revalidatePath(`/operations/tasks/${id}`);
 
     return ok;
@@ -140,7 +140,7 @@ export async function assignTask(id: number, employeeId: number | null, teamId: 
       token,
       body: { assignee_employee_id: employeeId, assignee_team_id: teamId },
     });
-    revalidatePath('/operations/tasks');
+    revalidatePath('/admin/tasks');
     revalidatePath(`/operations/tasks/${id}`);
 
     return ok;
@@ -153,7 +153,7 @@ export async function changeTaskStatus(id: number, status: string): Promise<Acti
   try {
     const token = await requireToken();
     await apiFetch(`/tasks/${id}/status`, { method: 'PUT', token, body: { status } });
-    revalidatePath('/operations/tasks');
+    revalidatePath('/admin/tasks');
     revalidatePath(`/operations/tasks/${id}`);
 
     return ok;
@@ -166,7 +166,7 @@ export async function deleteTask(id: number): Promise<ActionState> {
   try {
     const token = await requireToken();
     await apiFetch(`/tasks/${id}`, { method: 'DELETE', token });
-    revalidatePath('/operations/tasks');
+    revalidatePath('/admin/tasks');
 
     return ok;
   } catch (error) {

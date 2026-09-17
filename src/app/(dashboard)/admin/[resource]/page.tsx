@@ -1,4 +1,6 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { ReactNode } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PageHeader } from '@/components/organization/page-header';
 import { DynamicActionButton } from '@/components/dynamic/dynamic-action-button';
@@ -38,6 +40,45 @@ function visibleActions(actions: ActionSchema[] | undefined, user: AuthUser | nu
   return (actions ?? []).filter((action) => action.permission === null || hasPermission(user, action.permission));
 }
 
+function detailHref(detailPath: string | undefined, id: unknown): string | null {
+  if (!detailPath || id === undefined || id === null) {
+    return null;
+  }
+
+  return detailPath.replace('{id}', String(id));
+}
+
+/** Renders a cell's value — as a link into a hand-built detail page for the label column when `detailPath` is set, a download link for a `link` column, or plain text otherwise. */
+function renderCell(
+  row: Record<string, unknown>,
+  column: { key: string; label: string; link?: boolean },
+  resource: { labelField: string; detailPath?: string },
+): ReactNode {
+  const value = getPath(row, column.key);
+
+  if (column.link && typeof value === 'string' && value) {
+    return (
+      <a href={value} className="text-primary underline">
+        Download
+      </a>
+    );
+  }
+
+  if (column.key === resource.labelField) {
+    const href = detailHref(resource.detailPath, row.id);
+
+    if (href) {
+      return (
+        <Link href={href} className="text-primary hover:underline">
+          {formatCell(value)}
+        </Link>
+      );
+    }
+  }
+
+  return formatCell(value, column);
+}
+
 function rowKey(row: Record<string, unknown>, labelField: string): string {
   if (row.id !== undefined && row.id !== null) {
     return String(row.id);
@@ -75,7 +116,9 @@ export default async function DynamicResourcePage({
   const canCreate = resource.permissions.create !== null && hasPermission(user, resource.permissions.create);
   const canUpdate = resource.permissions.update !== null && hasPermission(user, resource.permissions.update);
   const canDelete = resource.permissions.delete !== null && hasPermission(user, resource.permissions.delete);
-  const rowActions = visibleActions(resource.actions, user);
+  const allActions = visibleActions(resource.actions, user);
+  const rowActions = allActions.filter((action) => action.scope !== 'resource');
+  const resourceActions = allActions.filter((action) => action.scope === 'resource');
   const listPath = `/admin/${resource.key}`;
 
   if (resource.mode === 'singleton') {
@@ -110,8 +153,20 @@ export default async function DynamicResourcePage({
           title={resource.pluralLabel}
           description={`${rows.length} on record. Screen generated from the backend schema.`}
           action={
-            canCreate ? (
-              <DynamicFormDialog resource={resource} relationOptions={relationOptions} listPath={listPath} />
+            canCreate || resourceActions.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {resourceActions.map((action) => (
+                  <DynamicActionButton
+                    key={action.key}
+                    action={action}
+                    resourceEndpoint={resource.endpoint}
+                    row={{}}
+                    relationOptions={relationOptions}
+                    listPath={listPath}
+                  />
+                ))}
+                {canCreate && <DynamicFormDialog resource={resource} relationOptions={relationOptions} listPath={listPath} />}
+              </div>
             ) : undefined
           }
         />
@@ -130,21 +185,9 @@ export default async function DynamicResourcePage({
           <TableBody>
             {rows.map((row) => (
               <TableRow key={rowKey(row, resource.labelField)}>
-                {resource.columns.map((column) => {
-                  const value = getPath(row, column.key);
-
-                  return (
-                    <TableCell key={column.key}>
-                      {column.link && typeof value === 'string' && value ? (
-                        <a href={value} className="text-primary underline">
-                          Download
-                        </a>
-                      ) : (
-                        formatCell(value, column)
-                      )}
-                    </TableCell>
-                  );
-                })}
+                {resource.columns.map((column) => (
+                  <TableCell key={column.key}>{renderCell(row, column, resource)}</TableCell>
+                ))}
                 {(canUpdate || canDelete || rowActions.length > 0) && (
                   <TableCell className="flex flex-wrap justify-end gap-1">
                     {rowActions.map((action) => (
@@ -201,8 +244,20 @@ export default async function DynamicResourcePage({
         title={resource.pluralLabel}
         description={`${meta.total} on record. Screen generated from the backend schema.`}
         action={
-          canCreate ? (
-            <DynamicFormDialog resource={resource} relationOptions={relationOptions} listPath={listPath} />
+          canCreate || resourceActions.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {resourceActions.map((action) => (
+                <DynamicActionButton
+                  key={action.key}
+                  action={action}
+                  resourceEndpoint={resource.endpoint}
+                  row={{}}
+                  relationOptions={relationOptions}
+                  listPath={listPath}
+                />
+              ))}
+              {canCreate && <DynamicFormDialog resource={resource} relationOptions={relationOptions} listPath={listPath} />}
+            </div>
           ) : undefined
         }
       />
@@ -227,21 +282,9 @@ export default async function DynamicResourcePage({
         <TableBody>
           {rows.map((row) => (
             <TableRow key={rowKey(row, resource.labelField)}>
-              {resource.columns.map((column) => {
-                const value = getPath(row, column.key);
-
-                return (
-                  <TableCell key={column.key}>
-                    {column.link && typeof value === 'string' && value ? (
-                      <a href={value} className="text-primary underline">
-                        Download
-                      </a>
-                    ) : (
-                      formatCell(value, column)
-                    )}
-                  </TableCell>
-                );
-              })}
+              {resource.columns.map((column) => (
+                <TableCell key={column.key}>{renderCell(row, column, resource)}</TableCell>
+              ))}
               {(canUpdate || canDelete || rowActions.length > 0) && (
                 <TableCell className="flex flex-wrap justify-end gap-1">
                   {rowActions.map((action) => (

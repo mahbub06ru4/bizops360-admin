@@ -28,7 +28,7 @@ export function LeadConvertButton({ leadId }: { leadId: number }) {
             toast.error(result.error);
           } else {
             toast.success('Lead converted.');
-            router.push('/crm/customers');
+            router.push('/admin/customers');
           }
         });
       }}

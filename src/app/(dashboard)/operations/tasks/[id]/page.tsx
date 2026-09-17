@@ -128,7 +128,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       <div className="mt-6">
-        <Link href="/operations/tasks" className="text-sm text-muted-foreground hover:underline">
+        <Link href="/admin/tasks" className="text-sm text-muted-foreground hover:underline">
           ← Back to tasks
         </Link>
       </div>

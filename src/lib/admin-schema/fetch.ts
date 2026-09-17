@@ -2,7 +2,7 @@ import { cache } from 'react';
 import { apiFetch } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/errors';
 import { getToken, hasPermission } from '@/lib/auth/session';
-import { getPath, type AdminSchema, type ResourceSchema } from './types';
+import { getPath, type AdminSchema, type RelationOption, type ResourceSchema } from './types';
 import type { AuthUser, Paginated } from '@/lib/api/types';
 import type { NavIconName, NavSection } from '@/lib/nav';
 
@@ -22,17 +22,28 @@ export async function getResourceSchema(key: string): Promise<ResourceSchema | n
   return schema.resources.find((resource) => resource.key === key) ?? null;
 }
 
-/** All rows of a resource as {id, label} options, for relation dropdowns. */
+/** Column keys, beyond the label, worth matching against when a user searches a relation dropdown (e.g. "search by name or mobile/staff id"). */
+const SEARCHABLE_EXTRA_KEYS = ['employee_code', 'phone', 'mobile', 'email', 'code'];
+
+/** All rows of a resource as {id, label, search} options, for relation dropdowns. `search` folds in identifying columns (phone, staff code, email, ...) so a combobox can filter by more than just the display label. */
 export async function listResourceOptions(
   resource: ResourceSchema,
   token: string | null,
-): Promise<{ id: number; label: string }[]> {
+): Promise<RelationOption[]> {
   const { data } = await apiFetch<Paginated<Record<string, unknown>>>(`${resource.endpoint}?per_page=100`, { token });
 
-  return data.map((row) => ({
-    id: Number(row.id),
-    label: String(getPath(row, resource.labelField) ?? `#${row.id}`),
-  }));
+  return data.map((row) => {
+    const label = String(getPath(row, resource.labelField) ?? `#${row.id}`);
+    const extras = SEARCHABLE_EXTRA_KEYS.map((key) => getPath(row, key))
+      .filter((value): value is string | number => typeof value === 'string' || typeof value === 'number')
+      .map(String);
+
+    return {
+      id: Number(row.id),
+      label,
+      search: [label, ...extras].join(' ').toLowerCase(),
+    };
+  });
 }
 
 /**
@@ -115,7 +126,7 @@ export async function listRelationOptionsFor(
   resource: ResourceSchema,
   schema: AdminSchema,
   token: string | null,
-): Promise<Record<string, { id: number; label: string }[]>> {
+): Promise<Record<string, RelationOption[]>> {
   const actionFields = (resource.actions ?? []).flatMap((action) => action.fields);
   const relationResourceKeys = Array.from(
     new Set(

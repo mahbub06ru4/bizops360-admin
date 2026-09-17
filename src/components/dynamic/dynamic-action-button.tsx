@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { RelationCombobox } from '@/components/dynamic/relation-combobox';
 import { toast } from 'sonner';
 import { fetchResourceDetail, invokeResourceAction, type ActionState } from '@/lib/admin-schema/actions';
-import { getPath, type ActionSchema } from '@/lib/admin-schema/types';
+import { getPath, type ActionSchema, type RelationOption } from '@/lib/admin-schema/types';
 
 const initial: ActionState = { error: null };
 const NONE = '__none__';
@@ -53,7 +54,7 @@ function ActionFields({
 }: {
   action: ActionSchema;
   record: Record<string, unknown>;
-  relationOptions: Record<string, { id: number; label: string }[]>;
+  relationOptions: Record<string, RelationOption[]>;
   state: ActionState;
 }) {
   const [pickerValues, setPickerValues] = useState<Record<string, string>>(() => {
@@ -79,6 +80,7 @@ function ActionFields({
 
     return initialValues;
   });
+  const [multiSearch, setMultiSearch] = useState<Record<string, string>>({});
 
   return (
     <>
@@ -94,14 +96,28 @@ function ActionFields({
           );
         }
 
-        if (field.type === 'select' || field.type === 'relation') {
-          const options =
-            field.type === 'relation' && field.relation
-              ? (relationOptions[field.relation.resource] ?? []).map((option) => ({
-                  value: String(option.id),
-                  label: option.label,
-                }))
-              : (field.options ?? []);
+        if (field.type === 'relation') {
+          const options = field.relation ? (relationOptions[field.relation.resource] ?? []) : [];
+          const value = pickerValues[field.key] ?? NONE;
+
+          return (
+            <div key={field.key} className="flex flex-col gap-2">
+              <Label>{field.label}</Label>
+              <input type="hidden" name={field.key} value={value === NONE ? '' : value} />
+              <RelationCombobox
+                options={options}
+                value={value === NONE ? '' : value}
+                onChange={(next) => setPickerValues((prev) => ({ ...prev, [field.key]: next || NONE }))}
+                placeholder={`Choose ${field.label.toLowerCase()}`}
+                clearable={!field.required}
+              />
+              {fieldError && <p className="text-sm text-destructive">{fieldError}</p>}
+            </div>
+          );
+        }
+
+        if (field.type === 'select') {
+          const options = field.options ?? [];
           const value = pickerValues[field.key] ?? NONE;
 
           return (
@@ -127,18 +143,28 @@ function ActionFields({
         }
 
         if (field.type === 'multiselect' || field.type === 'relation-multi') {
-          const options =
+          const allOptions =
             field.type === 'relation-multi' && field.relation
               ? (relationOptions[field.relation.resource] ?? []).map((option) => ({
                   value: String(option.id),
                   label: option.label,
+                  search: option.search,
                 }))
-              : (field.options ?? []);
+              : (field.options ?? []).map((option) => ({ ...option, search: option.label.toLowerCase() }));
           const selected = multiValues[field.key] ?? [];
+          const query = (multiSearch[field.key] ?? '').trim().toLowerCase();
+          const options = query.length === 0 ? allOptions : allOptions.filter((option) => option.search.includes(query));
 
           return (
             <div key={field.key} className="flex flex-col gap-2">
               <Label>{field.label}</Label>
+              {allOptions.length > 6 && (
+                <Input
+                  placeholder="Search by name, mobile, or staff id…"
+                  value={multiSearch[field.key] ?? ''}
+                  onChange={(event) => setMultiSearch((prev) => ({ ...prev, [field.key]: event.target.value }))}
+                />
+              )}
               <div className="flex max-h-48 flex-col gap-2 overflow-y-auto rounded-md border p-3">
                 {options.map((option) => (
                   <div key={option.value} className="flex items-center gap-2">
@@ -159,7 +185,9 @@ function ActionFields({
                     </Label>
                   </div>
                 ))}
-                {options.length === 0 && <p className="text-sm text-muted-foreground">No options.</p>}
+                {options.length === 0 && (
+                  <p className="text-sm text-muted-foreground">{query ? 'No matches.' : 'No options.'}</p>
+                )}
               </div>
               {selected.map((value) => (
                 <input key={value} type="hidden" name={field.key} value={value} />
@@ -208,11 +236,12 @@ export function DynamicActionButton({
 }: {
   action: ActionSchema;
   resourceEndpoint: string;
+  /** Empty object for a `scope: 'resource'` action — there's no row to prefill from. */
   row: Record<string, unknown>;
-  relationOptions: Record<string, { id: number; label: string }[]>;
+  relationOptions: Record<string, RelationOption[]>;
   listPath: string;
 }) {
-  const id = Number(row.id);
+  const id = action.scope === 'resource' ? null : Number(row.id);
   const boundAction = invokeResourceAction.bind(null, action.method, action.endpoint, id, action.fields, listPath);
   const [state, formAction, pending] = useActionState(boundAction, initial);
   const [open, setOpen] = useState(false);
@@ -265,7 +294,7 @@ export function DynamicActionButton({
       onOpenChange={(next) => {
         setOpen(next);
 
-        if (next && action.fetchDetail && !detail) {
+        if (next && action.fetchDetail && !detail && id !== null) {
           setLoadingDetail(true);
           fetchResourceDetail(resourceEndpoint, id)
             .then((fetched) => {

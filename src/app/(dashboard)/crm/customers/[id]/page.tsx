@@ -124,7 +124,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
       </div>
 
       <div className="mt-6">
-        <Link href="/crm/customers" className="text-sm text-muted-foreground hover:underline">
+        <Link href="/admin/customers" className="text-sm text-muted-foreground hover:underline">
           ← Back to customers
         </Link>
       </div>

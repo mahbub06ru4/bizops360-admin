@@ -76,7 +76,7 @@ export async function createLead(_prev: ActionState, formData: FormData): Promis
   try {
     const token = await requireToken();
     await apiFetch<{ data: Lead }>('/leads', { method: 'POST', token, body: leadPayload(formData) });
-    revalidatePath('/crm/leads');
+    revalidatePath('/admin/leads');
 
     return ok;
   } catch (error) {
@@ -88,7 +88,7 @@ export async function updateLead(id: number, _prev: ActionState, formData: FormD
   try {
     const token = await requireToken();
     await apiFetch<{ data: Lead }>(`/leads/${id}`, { method: 'PUT', token, body: leadPayload(formData) });
-    revalidatePath('/crm/leads');
+    revalidatePath('/admin/leads');
     revalidatePath(`/crm/leads/${id}`);
 
     return ok;
@@ -105,7 +105,7 @@ export async function moveLeadStage(id: number, stage: string, lostReason: strin
       token,
       body: { stage, lost_reason: lostReason },
     });
-    revalidatePath('/crm/leads');
+    revalidatePath('/admin/leads');
     revalidatePath(`/crm/leads/${id}`);
 
     return ok;
@@ -118,9 +118,9 @@ export async function convertLead(id: number): Promise<ActionState> {
   try {
     const token = await requireToken();
     await apiFetch(`/leads/${id}/convert`, { method: 'POST', token, body: {} });
-    revalidatePath('/crm/leads');
+    revalidatePath('/admin/leads');
     revalidatePath(`/crm/leads/${id}`);
-    revalidatePath('/crm/customers');
+    revalidatePath('/admin/customers');
 
     return ok;
   } catch (error) {
@@ -132,7 +132,7 @@ export async function deleteLead(id: number): Promise<ActionState> {
   try {
     const token = await requireToken();
     await apiFetch(`/leads/${id}`, { method: 'DELETE', token });
-    revalidatePath('/crm/leads');
+    revalidatePath('/admin/leads');
 
     return ok;
   } catch (error) {
@@ -146,7 +146,7 @@ export async function createCustomer(_prev: ActionState, formData: FormData): Pr
   try {
     const token = await requireToken();
     await apiFetch<{ data: Customer }>('/customers', { method: 'POST', token, body: partyPayload(formData) });
-    revalidatePath('/crm/customers');
+    revalidatePath('/admin/customers');
 
     return ok;
   } catch (error) {
@@ -158,7 +158,7 @@ export async function updateCustomer(id: number, _prev: ActionState, formData: F
   try {
     const token = await requireToken();
     await apiFetch<{ data: Customer }>(`/customers/${id}`, { method: 'PUT', token, body: partyPayload(formData) });
-    revalidatePath('/crm/customers');
+    revalidatePath('/admin/customers');
     revalidatePath(`/crm/customers/${id}`);
 
     return ok;
@@ -171,7 +171,7 @@ export async function deleteCustomer(id: number): Promise<ActionState> {
   try {
     const token = await requireToken();
     await apiFetch(`/customers/${id}`, { method: 'DELETE', token });
-    revalidatePath('/crm/customers');
+    revalidatePath('/admin/customers');
 
     return ok;
   } catch (error) {
@@ -250,7 +250,7 @@ export async function scheduleFollowUp(
       body: followUpPayload(formData),
     });
     revalidatePath(`/crm/${parent}/${parentId}`);
-    revalidatePath('/crm/follow-ups');
+    revalidatePath('/admin/follow_ups');
 
     return ok;
   } catch (error) {
@@ -262,7 +262,7 @@ export async function completeFollowUp(id: number, outcome: string | null): Prom
   try {
     const token = await requireToken();
     await apiFetch(`/follow-ups/${id}/complete`, { method: 'POST', token, body: { outcome } });
-    revalidatePath('/crm/follow-ups');
+    revalidatePath('/admin/follow_ups');
 
     return ok;
   } catch (error) {
@@ -274,7 +274,7 @@ export async function cancelFollowUp(id: number): Promise<ActionState> {
   try {
     const token = await requireToken();
     await apiFetch(`/follow-ups/${id}/cancel`, { method: 'POST', token });
-    revalidatePath('/crm/follow-ups');
+    revalidatePath('/admin/follow_ups');
 
     return ok;
   } catch (error) {
@@ -286,7 +286,7 @@ export async function deleteFollowUp(id: number): Promise<ActionState> {
   try {
     const token = await requireToken();
     await apiFetch(`/follow-ups/${id}`, { method: 'DELETE', token });
-    revalidatePath('/crm/follow-ups');
+    revalidatePath('/admin/follow_ups');
 
     return ok;
   } catch (error) {

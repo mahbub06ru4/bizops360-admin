@@ -222,7 +222,7 @@ export async function upsertLeaveBalance(_prev: ActionState, formData: FormData)
         entitled_days: Number(formData.get('entitled_days') ?? 0),
       },
     });
-    revalidatePath('/hr/leave-balances');
+    revalidatePath('/admin/leave_balances');
 
     return ok;
   } catch (error) {

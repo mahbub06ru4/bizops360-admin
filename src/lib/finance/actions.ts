@@ -186,7 +186,7 @@ export async function createInvoice(_prev: ActionState, formData: FormData): Pro
   try {
     const token = await requireToken();
     await apiFetch<{ data: Invoice }>('/invoices', { method: 'POST', token, body: invoicePayload(formData) });
-    revalidatePath('/finance/invoices');
+    revalidatePath('/admin/invoices');
 
     return ok;
   } catch (error) {
@@ -198,7 +198,7 @@ export async function updateInvoice(id: number, _prev: ActionState, formData: Fo
   try {
     const token = await requireToken();
     await apiFetch<{ data: Invoice }>(`/invoices/${id}`, { method: 'PUT', token, body: invoicePayload(formData) });
-    revalidatePath('/finance/invoices');
+    revalidatePath('/admin/invoices');
     revalidatePath(`/finance/invoices/${id}`);
 
     return ok;
@@ -211,7 +211,7 @@ export async function deleteInvoice(id: number): Promise<ActionState> {
   try {
     const token = await requireToken();
     await apiFetch(`/invoices/${id}`, { method: 'DELETE', token });
-    revalidatePath('/finance/invoices');
+    revalidatePath('/admin/invoices');
 
     return ok;
   } catch (error) {
@@ -223,7 +223,7 @@ export async function sendInvoice(id: number): Promise<ActionState> {
   try {
     const token = await requireToken();
     await apiFetch(`/invoices/${id}/send`, { method: 'POST', token });
-    revalidatePath('/finance/invoices');
+    revalidatePath('/admin/invoices');
     revalidatePath(`/finance/invoices/${id}`);
 
     return ok;
@@ -236,7 +236,7 @@ export async function voidInvoice(id: number): Promise<ActionState> {
   try {
     const token = await requireToken();
     await apiFetch(`/invoices/${id}/void`, { method: 'POST', token });
-    revalidatePath('/finance/invoices');
+    revalidatePath('/admin/invoices');
     revalidatePath(`/finance/invoices/${id}`);
 
     return ok;
@@ -259,7 +259,7 @@ export async function recordInvoicePayment(id: number, _prev: ActionState, formD
         note: optionalString(formData, 'note'),
       },
     });
-    revalidatePath('/finance/invoices');
+    revalidatePath('/admin/invoices');
     revalidatePath(`/finance/invoices/${id}`);
 
     return ok;
@@ -282,7 +282,7 @@ export async function refundInvoice(id: number, _prev: ActionState, formData: Fo
         reason: optionalString(formData, 'reason'),
       },
     });
-    revalidatePath('/finance/invoices');
+    revalidatePath('/admin/invoices');
     revalidatePath(`/finance/invoices/${id}`);
 
     return ok;
