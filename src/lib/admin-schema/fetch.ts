@@ -47,11 +47,10 @@ export async function listResourceOptions(
 }
 
 /**
- * Builds nav sections from the live backend schema — rendered alongside the
- * hand-written NAV_SECTIONS in nav.ts as proof the panel can be genuinely
- * driven by backend metadata, not just by data within a fixed set of screens.
- * Never throws: a schema-endpoint hiccup should drop the dynamic section,
- * not take down every page's sidebar.
+ * Builds nav sections from the live backend schema — these are the whole
+ * module nav now (NAV_SECTIONS in nav.ts only has the plain Overview/
+ * Dashboard link left). Never throws: a schema-endpoint hiccup should drop
+ * these sections, not take down every page's sidebar.
  */
 export async function getDynamicNavSectionsSafe(user: AuthUser | null): Promise<NavSection[]> {
   try {
@@ -59,10 +58,7 @@ export async function getDynamicNavSectionsSafe(user: AuthUser | null): Promise<
 
     const managementSections = schema.modules
       .map((module) => ({
-        // Suffixed so it never collides (as a React list key or visually)
-        // with the hand-written section of the same name — this nav entry
-        // points at the generic, backend-schema-driven screens instead.
-        label: `${module.label} (Dynamic)`,
+        label: module.label,
         icon: module.icon as NavIconName,
         items: [
           ...module.resources
