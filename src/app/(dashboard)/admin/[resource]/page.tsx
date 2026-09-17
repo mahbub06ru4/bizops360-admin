@@ -40,19 +40,11 @@ function visibleActions(actions: ActionSchema[] | undefined, user: AuthUser | nu
   return (actions ?? []).filter((action) => action.permission === null || hasPermission(user, action.permission));
 }
 
-function detailHref(detailPath: string | undefined, id: unknown): string | null {
-  if (!detailPath || id === undefined || id === null) {
-    return null;
-  }
-
-  return detailPath.replace('{id}', String(id));
-}
-
-/** Renders a cell's value — as a link into a hand-built detail page for the label column when `detailPath` is set, a download link for a `link` column, or plain text otherwise. */
+/** Renders a cell's value — as a link into the generic /admin/{key}/{id} detail page for the label column when `resource.detail` is set, a download link for a `link` column, or plain text otherwise. */
 function renderCell(
   row: Record<string, unknown>,
   column: { key: string; label: string; link?: boolean },
-  resource: { labelField: string; detailPath?: string },
+  resource: { key: string; labelField: string; detail?: unknown },
 ): ReactNode {
   const value = getPath(row, column.key);
 
@@ -64,16 +56,12 @@ function renderCell(
     );
   }
 
-  if (column.key === resource.labelField) {
-    const href = detailHref(resource.detailPath, row.id);
-
-    if (href) {
-      return (
-        <Link href={href} className="text-primary hover:underline">
-          {formatCell(value)}
-        </Link>
-      );
-    }
+  if (column.key === resource.labelField && resource.detail && row.id !== undefined && row.id !== null) {
+    return (
+      <Link href={`/admin/${resource.key}/${row.id}`} className="text-primary hover:underline">
+        {formatCell(value)}
+      </Link>
+    );
   }
 
   return formatCell(value, column);
@@ -165,7 +153,7 @@ export default async function DynamicResourcePage({
                     listPath={listPath}
                   />
                 ))}
-                {canCreate && <DynamicFormDialog resource={resource} relationOptions={relationOptions} listPath={listPath} />}
+                {canCreate && <DynamicFormDialog resource={resource} relationOptions={relationOptions} listPath={listPath} createEndpoint={resource.endpoint} updateEndpoint={resource.endpoint} />}
               </div>
             ) : undefined
           }
@@ -201,7 +189,7 @@ export default async function DynamicResourcePage({
                       />
                     ))}
                     {canUpdate && (
-                      <DynamicFormDialog resource={resource} record={row} relationOptions={relationOptions} listPath={listPath} />
+                      <DynamicFormDialog resource={resource} record={row} relationOptions={relationOptions} listPath={listPath} createEndpoint={resource.endpoint} updateEndpoint={resource.endpoint} />
                     )}
                     {canDelete && row.id !== undefined && (
                       <DynamicDeleteButton
@@ -256,7 +244,7 @@ export default async function DynamicResourcePage({
                   listPath={listPath}
                 />
               ))}
-              {canCreate && <DynamicFormDialog resource={resource} relationOptions={relationOptions} listPath={listPath} />}
+              {canCreate && <DynamicFormDialog resource={resource} relationOptions={relationOptions} listPath={listPath} createEndpoint={resource.endpoint} updateEndpoint={resource.endpoint} />}
             </div>
           ) : undefined
         }
@@ -298,7 +286,7 @@ export default async function DynamicResourcePage({
                     />
                   ))}
                   {canUpdate && (
-                    <DynamicFormDialog resource={resource} record={row} relationOptions={relationOptions} listPath={listPath} />
+                    <DynamicFormDialog resource={resource} record={row} relationOptions={relationOptions} listPath={listPath} createEndpoint={resource.endpoint} updateEndpoint={resource.endpoint} />
                   )}
                   {canDelete && (
                     <DynamicDeleteButton

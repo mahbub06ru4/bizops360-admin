@@ -124,9 +124,13 @@ export async function listRelationOptionsFor(
   token: string | null,
 ): Promise<Record<string, RelationOption[]>> {
   const actionFields = (resource.actions ?? []).flatMap((action) => action.fields);
+  const relatedListFields = (resource.detail?.relatedLists ?? []).flatMap((list) => [
+    ...list.fields,
+    ...(list.actions ?? []).flatMap((action) => action.fields),
+  ]);
   const relationResourceKeys = Array.from(
     new Set(
-      [...resource.fields, ...actionFields]
+      [...resource.fields, ...actionFields, ...relatedListFields]
         .filter((field) => (field.type === 'relation' || field.type === 'relation-multi') && field.relation)
         .map((field) => field.relation!.resource),
     ),

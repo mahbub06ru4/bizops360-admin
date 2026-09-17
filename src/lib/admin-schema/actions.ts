@@ -158,6 +158,24 @@ export async function invokeResourceAction(
   }
 }
 
+/** Posts a freeform note to a detail page's activity feed ({ body }). */
+export async function addActivityNote(
+  noteEndpoint: string,
+  listPath: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const token = await requireToken();
+    await apiFetch(noteEndpoint, { method: 'POST', token, body: { body: String(formData.get('body') ?? '') } });
+    revalidatePath(listPath);
+
+    return ok;
+  } catch (error) {
+    return fail(error);
+  }
+}
+
 /** Fetches a single record fresh — used by actions with `fetchDetail` to prefill fields the list row doesn't carry. */
 export async function fetchResourceDetail(endpoint: string, id: number): Promise<Record<string, unknown> | null> {
   try {

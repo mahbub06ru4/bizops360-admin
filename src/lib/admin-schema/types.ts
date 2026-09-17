@@ -105,8 +105,55 @@ export interface ResourceSchema {
   actions?: ActionSchema[];
   /** Fetched and rendered as a row of stat cards above the table — read-only aggregate data no generic form/table captures. */
   summaryEndpoint?: string;
-  /** May contain `{id}`. When set, the label cell links here instead of showing plain text — for a resource whose detail view is still a hand-built page. */
-  detailPath?: string;
+  /** When set, the label cell links to /admin/{key}/{id} — a generic detail page built from this. */
+  detail?: DetailSchema;
+}
+
+/**
+ * A nested sub-resource with its own CRUD, shown as a tab/card on a detail
+ * page — contacts and follow-ups under a lead, comments/attachments under a
+ * task. `listEndpoint` (`{id}` = the parent's id) is GET+POST; `rowEndpoint`
+ * (`{id}` = the row's own id) is PUT+DELETE — omit whichever the backend
+ * doesn't support (e.g. attachments have no update route).
+ */
+export interface RelatedListSchema {
+  key: string;
+  label: string;
+  labelField: string;
+  listEndpoint: string;
+  rowEndpoint?: string;
+  permissions: ResourcePermissions;
+  columns: ColumnSchema[];
+  fields: FieldSchema[];
+  actions?: ActionSchema[];
+  /** Update/delete show only for the row's own author (row[ownerField] === current user id) unless the viewer holds `bypassPermission`. */
+  ownerField?: string;
+  bypassPermission?: string;
+}
+
+/** A read-only table sourced from an array already present in the parent's own detail-fetch response (a dot-path `path` into it), not a separate endpoint — e.g. Invoice's embedded payments/refunds. */
+export interface EmbeddedListSchema {
+  key: string;
+  label: string;
+  path: string;
+  columns: ColumnSchema[];
+}
+
+/** A read-only timeline plus an optional freeform note form. */
+export interface ActivityFeedSchema {
+  label: string;
+  listEndpoint: string;
+  permission: string;
+  noteEndpoint?: string;
+  notePermission?: string;
+}
+
+export interface DetailSchema {
+  /** Read-only {key, label} pairs shown at the top of the detail page. */
+  fields?: ColumnSchema[];
+  relatedLists?: RelatedListSchema[];
+  embeddedLists?: EmbeddedListSchema[];
+  activity?: ActivityFeedSchema;
 }
 
 export interface ModuleSchema {

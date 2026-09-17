@@ -21,16 +21,21 @@ export function DynamicFormDialog({
   record,
   relationOptions,
   listPath,
+  createEndpoint,
+  updateEndpoint,
 }: {
-  resource: ResourceSchema;
+  resource: Pick<ResourceSchema, 'label' | 'fields'>;
   record?: Record<string, unknown>;
   relationOptions: Record<string, RelationOption[]>;
   listPath: string;
+  /** Overrides for a nested (relatedList) resource, whose create/update endpoints differ (parent-scoped list vs. flat row). Default to a top-level resource's own endpoint. */
+  createEndpoint: string;
+  updateEndpoint: string;
 }) {
   const [open, setOpen] = useState(false);
   const action = record
-    ? updateResourceRecord.bind(null, resource.endpoint, Number(record.id), resource.fields, listPath)
-    : createResourceRecord.bind(null, resource.endpoint, resource.fields, listPath);
+    ? updateResourceRecord.bind(null, updateEndpoint, Number(record.id), resource.fields, listPath)
+    : createResourceRecord.bind(null, createEndpoint, resource.fields, listPath);
   const [state, formAction, pending] = useActionState(action, initial);
   const [pickerValues, setPickerValues] = useState<Record<string, string>>(() => {
     const initialValues: Record<string, string> = {};
