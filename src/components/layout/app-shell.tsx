@@ -23,6 +23,10 @@ export async function AppShell({ user, children }: { user: AuthUser; children: R
         <div className="flex-1 overflow-y-auto px-3 py-4">
           <SidebarNav sections={sections} />
         </div>
+        <div className="border-t border-sidebar-border px-5 py-3 text-[11px] leading-tight text-sidebar-foreground/40">
+          <p>Developed: Eng. Mahbub</p>
+          <p>Powered By: Solution360</p>
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
