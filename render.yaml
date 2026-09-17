@@ -1,0 +1,16 @@
+# All API calls go through apiFetch() (server-only) — this app never calls
+# bizops360-api from the browser, so it needs no CORS entry on that service.
+services:
+  - type: web
+    name: bizops360-admin
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start -- -p $PORT
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_BASE_URL
+        value: https://bizops360-api.onrender.com
