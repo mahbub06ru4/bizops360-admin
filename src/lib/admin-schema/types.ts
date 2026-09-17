@@ -125,10 +125,30 @@ export interface DashboardLink {
   permission: string;
 }
 
+/**
+ * Describes one main-dashboard chart: which endpoint to fetch, a `dataPath`
+ * (dot-path, read with `getPath`) into that response, and a chart `type`.
+ * 'area': `dataPath` is an array of rows; `xKey` names the category field on
+ * each row, `series` which numeric fields to plot as lines. 'donut'/'bar':
+ * `dataPath` is a plain {label: count} object, one slice/bar per key.
+ * Charts sharing an `endpoint` are fetched once and reused.
+ */
+export interface ChartSchema {
+  key: string;
+  label: string;
+  type: 'area' | 'donut' | 'bar';
+  endpoint: string;
+  permission: string;
+  dataPath: string;
+  xKey?: string;
+  series?: { key: string; label: string }[];
+}
+
 export interface AdminSchema {
   modules: ModuleSchema[];
   resources: ResourceSchema[];
   dashboards: DashboardLink[];
+  charts: ChartSchema[];
 }
 
 /** Reads a possibly-nested value ("department.name") out of a record. */
