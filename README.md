@@ -1,4 +1,13 @@
-# BizOps 360 — Admin Console
+# BizOps 360 — Admin Console (Office Management)
+
+> This is the Office Management product's admin panel — the generic one,
+> covering only the common Organization/HR/Operations/CRM/Finance
+> modules. It's also the base every industry-specific admin panel forks
+> from: [`bizops360-admin-realestate`](https://github.com/mahbub06ru4/bizops360-admin-realestate)
+> and [`bizops360-admin-travelagency`](https://github.com/mahbub06ru4/bizops360-admin-travelagency).
+> All three share the same dynamic engine and the same `bizops360-api`
+> backend — what differs is which resources each tenant's admin schema
+> includes, not frontend code.
 
 **Status: built.** A Next.js web application giving every `bizops360-api`
 module (Organization, HR, Operations, CRM, Finance) a real interface. One

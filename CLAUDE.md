@@ -1,8 +1,12 @@
-# BizOps 360 — Admin Console
+# BizOps 360 — Admin Console (Office Management)
 
-Next.js (App Router) + TypeScript web front end for `bizops360-api`. Full
-plan: `BizOps360_Admin_Panel_Plan.docx`, phase order in `README.md`. Read
-both at the start of every phase before planning.
+Next.js (App Router) + TypeScript web front end for `bizops360-api` — the
+Office Management product's admin panel, and the base every
+industry-specific admin panel (`bizops360-admin-realestate`,
+`bizops360-admin-travelagency`) forks from. Read `README.md` for the full
+architecture: a schema-driven dynamic engine, not hand-coded screens
+(`BizOps360_Admin_Panel_Plan.docx` describes the original, now-superseded
+phase-by-phase plan — kept for history, not current guidance).
 
 ## Stack
 
