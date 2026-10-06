@@ -9,10 +9,23 @@
 > backend — what differs is which resources each tenant's admin schema
 > includes, not frontend code.
 
-**Status: built.** A Next.js web application giving every `bizops360-api`
-module (Organization, HR, Operations, CRM, Finance) a real interface. One
-login, one nav, adapting by role/permission — never forked per tenant or
-per role.
+**Status: built and QA-verified.** A Next.js web application giving every
+`bizops360-api` module (Organization, HR, Operations, CRM, Finance) a real
+interface. One login, one nav, adapting by role/permission — never forked
+per tenant or per role. Live-tested with both an HR/Owner session (leave
+approval, team management) and a Staff self-service session (own leave
+requests, read-only Attendance settings), and a full Operations/CRM/
+Finance walkthrough — two real bugs found and fixed this way (ISO
+datetime strings rendering raw instead of formatted, in table cells and
+in the activity feed), now shared by all three forks via `formatCellValue()`.
+
+The Real Estate and Travel Agency forks of this panel
+([`bizops360-admin-realestate`](https://github.com/mahbub06ru4/bizops360-admin-realestate),
+[`bizops360-admin-travelagency`](https://github.com/mahbub06ru4/bizops360-admin-travelagency))
+are both done too — their industry modules are backend-only additions to
+`AdminSchemaRegistry`, and their own Operations/CRM/Finance screens have
+been QA-walked the same way with no bugs found, confirming this engine
+needs zero per-product frontend code.
 
 The defining property of this app: almost none of it is hand-coded per
 screen. The backend exposes a single schema endpoint describing every
