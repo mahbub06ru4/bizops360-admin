@@ -3,6 +3,7 @@ import { DynamicActivityNoteForm } from '@/components/dynamic/dynamic-activity-n
 import { apiFetch } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/errors';
 import { hasPermission } from '@/lib/auth/session';
+import { formatCellValue } from '@/lib/admin-schema/format';
 import type { ActivityFeedSchema } from '@/lib/admin-schema/types';
 import type { AuthUser, Paginated } from '@/lib/api/types';
 
@@ -64,7 +65,7 @@ export async function DynamicActivityFeed({
               <span>
                 <span className="font-medium">{entry.causer_name ?? 'System'}</span> {entry.description}
               </span>
-              <span className="text-muted-foreground">{entry.created_at}</span>
+              <span className="text-muted-foreground">{formatCellValue(entry.created_at)}</span>
             </div>
           ))}
           {entries.length === 0 && <p className="text-sm text-muted-foreground">No activity recorded yet.</p>}
