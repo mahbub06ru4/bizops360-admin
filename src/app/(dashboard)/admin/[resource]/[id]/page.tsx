@@ -7,25 +7,10 @@ import { DynamicFormDialog } from '@/components/dynamic/dynamic-form-dialog';
 import { DynamicRelatedList } from '@/components/dynamic/dynamic-related-list';
 import { apiFetch } from '@/lib/api/client';
 import { getAdminSchema, listRelationOptionsFor } from '@/lib/admin-schema/fetch';
+import { formatCellValue } from '@/lib/admin-schema/format';
 import { getPath, type ActionSchema } from '@/lib/admin-schema/types';
 import { getSession, getToken, hasPermission } from '@/lib/auth/session';
 import type { AuthUser } from '@/lib/api/types';
-
-function formatCell(value: unknown): string {
-  if (value === null || value === undefined || value === '') {
-    return '—';
-  }
-
-  if (Array.isArray(value)) {
-    return value.length > 0 ? value.join(', ') : '—';
-  }
-
-  if (typeof value === 'boolean') {
-    return value ? 'Yes' : 'No';
-  }
-
-  return String(value);
-}
 
 function visibleActions(actions: ActionSchema[] | undefined, user: AuthUser | null): ActionSchema[] {
   return (actions ?? []).filter(
@@ -108,7 +93,7 @@ export default async function DynamicResourceDetailPage({
             {resource.detail.fields.map((field) => (
               <div key={field.key}>
                 <dt className="text-muted-foreground">{field.label}</dt>
-                <dd className="font-medium">{formatCell(getPath(record, field.key))}</dd>
+                <dd className="font-medium">{formatCellValue(getPath(record, field.key))}</dd>
               </div>
             ))}
           </dl>

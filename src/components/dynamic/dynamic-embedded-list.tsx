@@ -1,22 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatCellValue } from '@/lib/admin-schema/format';
 import { getPath, type EmbeddedListSchema } from '@/lib/admin-schema/types';
-
-function formatCell(value: unknown): string {
-  if (value === null || value === undefined || value === '') {
-    return '—';
-  }
-
-  if (Array.isArray(value)) {
-    return value.length > 0 ? value.join(', ') : '—';
-  }
-
-  if (typeof value === 'boolean') {
-    return value ? 'Yes' : 'No';
-  }
-
-  return String(value);
-}
 
 /** A read-only table for data already embedded in the detail record's own GET response — Invoice's payments/refunds, e.g. — no fetch, no create/edit/delete. */
 export function DynamicEmbeddedList({ list, record }: { list: EmbeddedListSchema; record: Record<string, unknown> }) {
@@ -41,7 +26,7 @@ export function DynamicEmbeddedList({ list, record }: { list: EmbeddedListSchema
             {rows.map((row, index) => (
               <TableRow key={String(row.id ?? index)}>
                 {list.columns.map((column) => (
-                  <TableCell key={column.key}>{formatCell(getPath(row, column.key))}</TableCell>
+                  <TableCell key={column.key}>{formatCellValue(getPath(row, column.key))}</TableCell>
                 ))}
               </TableRow>
             ))}

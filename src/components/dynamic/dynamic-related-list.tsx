@@ -6,28 +6,9 @@ import { DynamicFormDialog } from '@/components/dynamic/dynamic-form-dialog';
 import { apiFetch } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/errors';
 import { hasPermission } from '@/lib/auth/session';
+import { formatCellValue } from '@/lib/admin-schema/format';
 import { getPath, type RelatedListSchema, type RelationOption } from '@/lib/admin-schema/types';
 import type { AuthUser, Paginated } from '@/lib/api/types';
-
-function formatCell(value: unknown, link?: boolean): string {
-  if (value === null || value === undefined || value === '') {
-    return '—';
-  }
-
-  if (link) {
-    return 'Download';
-  }
-
-  if (Array.isArray(value)) {
-    return value.length > 0 ? value.join(', ') : '—';
-  }
-
-  if (typeof value === 'boolean') {
-    return value ? 'Yes' : 'No';
-  }
-
-  return String(value);
-}
 
 /** Strips a trailing `/{id}` template, leaving the base endpoint DynamicDeleteButton/updateResourceRecord append `/${id}` to themselves. */
 function baseEndpoint(rowEndpoint: string): string {
@@ -136,7 +117,7 @@ export async function DynamicRelatedList({
                             Download
                           </a>
                         ) : (
-                          formatCell(value, column.link)
+                          formatCellValue(value, { link: column.link })
                         )}
                       </TableCell>
                     );

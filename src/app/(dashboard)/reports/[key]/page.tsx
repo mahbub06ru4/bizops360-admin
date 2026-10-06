@@ -3,6 +3,7 @@ import { PageHeader } from '@/components/organization/page-header';
 import { ReportTable } from '@/components/reports/report-table';
 import { apiFetch } from '@/lib/api/client';
 import { getAdminSchema } from '@/lib/admin-schema/fetch';
+import { formatCellValue } from '@/lib/admin-schema/format';
 import { getPath } from '@/lib/admin-schema/types';
 import { getSession, getToken, hasPermission } from '@/lib/auth/session';
 import type { Paginated } from '@/lib/api/types';
@@ -53,19 +54,7 @@ export default async function DynamicReportPage({ params }: { params: Promise<{ 
 
   const rows: ReportRow[] = data.map((row) =>
     Object.fromEntries(
-      resource.columns.map((column) => {
-        const value = getPath(row, column.key);
-
-        if (typeof value === 'boolean') {
-          return [column.key, value ? 'Yes' : 'No'];
-        }
-
-        if (Array.isArray(value)) {
-          return [column.key, value.join(', ')];
-        }
-
-        return [column.key, value as string | number | null];
-      }),
+      resource.columns.map((column) => [column.key, formatCellValue(getPath(row, column.key))]),
     ),
   );
 

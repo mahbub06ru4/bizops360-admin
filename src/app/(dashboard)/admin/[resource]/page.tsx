@@ -12,29 +12,10 @@ import { PaginationControls } from '@/components/shared/pagination-controls';
 import { SearchBox } from '@/components/shared/search-box';
 import { apiFetch } from '@/lib/api/client';
 import { getAdminSchema, listRelationOptionsFor } from '@/lib/admin-schema/fetch';
+import { formatCellValue } from '@/lib/admin-schema/format';
 import { getPath, type ActionSchema } from '@/lib/admin-schema/types';
 import { getSession, getToken, hasPermission } from '@/lib/auth/session';
 import type { AuthUser, Paginated } from '@/lib/api/types';
-
-function formatCell(value: unknown, column?: { link?: boolean }): string {
-  if (value === null || value === undefined || value === '') {
-    return '—';
-  }
-
-  if (column?.link) {
-    return 'Download';
-  }
-
-  if (Array.isArray(value)) {
-    return value.length > 0 ? value.join(', ') : '—';
-  }
-
-  if (typeof value === 'boolean') {
-    return value ? 'Yes' : 'No';
-  }
-
-  return String(value);
-}
 
 function visibleActions(actions: ActionSchema[] | undefined, user: AuthUser | null): ActionSchema[] {
   return (actions ?? []).filter((action) => action.permission === null || hasPermission(user, action.permission));
@@ -59,12 +40,12 @@ function renderCell(
   if (column.key === resource.labelField && resource.detail && row.id !== undefined && row.id !== null) {
     return (
       <Link href={`/admin/${resource.key}/${row.id}`} className="text-primary hover:underline">
-        {formatCell(value)}
+        {formatCellValue(value)}
       </Link>
     );
   }
 
-  return formatCell(value, column);
+  return formatCellValue(value, column);
 }
 
 function rowKey(row: Record<string, unknown>, labelField: string): string {
@@ -121,7 +102,7 @@ export default async function DynamicResourcePage({
           <div className="rounded-xl border bg-card p-6 text-sm text-muted-foreground shadow-sm">
             {resource.fields.map((field) => (
               <p key={field.key}>
-                {field.label}: {formatCell(getPath(record, field.key))}
+                {field.label}: {formatCellValue(getPath(record, field.key))}
               </p>
             ))}
           </div>
